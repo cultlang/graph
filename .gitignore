@@ -1,0 +1,8 @@
+
+# dot files
+.vscode
+.DS_Store
+
+# bazel
+bazel-*
+
