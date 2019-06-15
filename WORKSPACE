@@ -34,3 +34,20 @@ http_archive(
     strip_prefix = "fmt-f16f77297e6bb4df38d4c858edb3295f55716cb4",
     sha256 = "edcacda20bf46be208fbc49cedee2a8a321005dd833752ccc6aa7a1a9d75dc23",
 )
+
+########################
+# Fmt
+http_archive(
+    name = "replxx",
+    urls = ["https://github.com/cgrinker/replxx/archive/46dfaf9bbebe517bfd1930f2e11f4b47b1a0b7f1.zip"],
+    strip_prefix = "replxx-46dfaf9bbebe517bfd1930f2e11f4b47b1a0b7f1",
+    sha256 = "27a9a7cafe65d79520a1e0cbe987833479a6e36abf54a43061708f8dbd2157c4",
+)
+
+########################
+# pegtl
+local_repository(
+    name = "pegtl",
+    path= "/Users/clarkrinker/src/github/cgrinker/PEGTL"
+)
+

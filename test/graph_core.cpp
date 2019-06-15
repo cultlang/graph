@@ -16,7 +16,7 @@ TEST_CASE( "::graph::GraphCore basic initialization, adding, and counts", "[grap
     REQUIRE(g.edgeCount() == 0);
     REQUIRE(g.propCount() == 0);
 
-    SECTION( "adding a label, only adds a node" )
+    SECTION( "adding a label, only adds a label" )
     {
         g.addLabel("a-label");
 

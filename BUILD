@@ -42,3 +42,22 @@ cc_test(
         "@catch//:single_include",
     ],
 )
+
+cc_binary(
+    name = "cli",
+    srcs = glob([
+        "cli/**/*.h*", 
+        "cli/**/*.cpp"
+    ]),
+    copts = select({
+        "@bazel_tools//src/conditions:windows": ["/std:c++17"],
+        "@bazel_tools//src/conditions:darwin": ["-std=c++17"],
+        "//conditions:default": ["-std=c++17"],
+    }),
+    deps = [
+        ":graph",
+        "@replxx//:replxx",
+        "@catch//:single_include",
+        "@pegtl//:pegtl"
+    ],
+)
