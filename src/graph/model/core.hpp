@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <deque>
-
+#include <string>
 #include "../util.hpp"
 
 namespace graph
