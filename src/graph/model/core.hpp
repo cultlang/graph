@@ -160,7 +160,7 @@ namespace graph
             }
             
             // By default edges point from 0-index to all others
-            inline Edge* addEdge(CoreData const& data, std::vector<Node*> const& nodes, bool invert = false)
+            inline Edge* addEdge(CoreData const& data, std::vector<Node const*> const& nodes, bool invert = false)
             {
                 auto nodes_size = nodes.size();
                 if (nodes_size < 2)
@@ -174,8 +174,9 @@ namespace graph
                 ref.nodes.reserve(nodes_size);
                 for (auto node : nodes)
                 {
-                    ref.nodes.push_back(node);
-                    node->edges.push_back(&ref);
+                    auto node_actual = const_cast<Node*>(node);
+                    ref.nodes.push_back(node_actual);
+                    node_actual->edges.push_back(&ref);
                 }
 
                 return &ref;

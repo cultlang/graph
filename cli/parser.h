@@ -1,9 +1,11 @@
 #pragma once
+#include <memory>
 
 #include "grammar.h"
+#include "semantics.h"
 
 namespace parser {
 
 
-  std::vector<std::vector<std::string>> parseSexprs(std::string);
+  std::shared_ptr<semantics::ParseTree> parseSexprs(std::string);
 }

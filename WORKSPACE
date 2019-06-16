@@ -48,6 +48,6 @@ http_archive(
 # pegtl
 local_repository(
     name = "pegtl",
-    path= "/Users/clarkrinker/src/github/cgrinker/PEGTL"
+    path= "A:/Data/Clark/src/github/cultlang/PEGTL"
 )
 
