@@ -24,6 +24,10 @@ namespace graph
         typename decltype(_nodes)::iterator _it;
 
     public:
+        inline GraphQueryPipeVertex()
+            : _nodes()
+            , _it(_nodes.end())
+        { }
         inline GraphQueryPipeVertex(std::vector<typename TGraph::Node const*> nodes)
             : _nodes(nodes)
             , _it(_nodes.end())
@@ -37,6 +41,19 @@ namespace graph
         inline GraphQueryPipeVertex(GraphQueryPipeVertex &&) = default;
 
         inline ~GraphQueryPipeVertex() = default;
+
+    // primarily for other pipes to use as an input to their queries
+    public:
+        inline void setNodes(std::vector<typename TGraph::Node const*> nodes)
+        {
+            _nodes = nodes;
+            _it = _nodes.end();
+        }
+        inline void setNode(typename TGraph::Node const* node)
+        {
+            _nodes = { node };
+            _it = _nodes.end();
+        }
 
     protected:
         virtual typename Query::Pipe* init() const override

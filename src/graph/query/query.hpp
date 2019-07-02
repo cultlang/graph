@@ -10,10 +10,10 @@ namespace graph
     protected:
         virtual std::shared_ptr<GraphQueryEngine<TGraph>> & engine() = 0;
         
-        virtual TQueryFinal addPipe(std::unique_ptr<typename GraphQueryEngine<TGraph>::Pipe> && Pipe) = 0;
+        virtual TQueryFinal addPipe(std::unique_ptr<typename GraphQueryEngine<TGraph>::PipeDescription> && Pipe) = 0;
 
         virtual TQueryFinal newQueryPipeline() = 0;
-        virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLine> extractPipeline(TQueryFinal const& other) = 0;
+        virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> extractPipeline(TQueryFinal const& other) = 0;
     };
 
     template<typename TGraph, template <typename, typename> typename TGraphQueryLibrary> 
@@ -22,13 +22,13 @@ namespace graph
     {
     private:
         std::shared_ptr<GraphQueryEngine<TGraph>> _engine;
-        std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLine> _pipeline;
+        std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> _pipeline;
 
         // subquery
         GraphQuery(std::shared_ptr<GraphQueryEngine<TGraph>> & engine)
         {
             _engine = engine;
-            _pipeline = std::make_shared<typename GraphQueryEngine<TGraph>::PipeLine>();
+            _pipeline = std::make_shared<typename GraphQueryEngine<TGraph>::PipeLineDescription>();
         }
 
     protected:
@@ -36,7 +36,7 @@ namespace graph
         {
             return _engine;
         }
-        inline virtual GraphQuery addPipe(std::unique_ptr<typename GraphQueryEngine<TGraph>::Pipe> && Pipe) override
+        inline virtual GraphQuery addPipe(std::unique_ptr<typename GraphQueryEngine<TGraph>::PipeDescription> && Pipe) override
         {
             _pipeline->addPipe(std::move(Pipe));
 
@@ -47,7 +47,7 @@ namespace graph
         {
             return GraphQuery(_engine);
         }
-        inline virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLine> extractPipeline(GraphQuery const& query)
+        inline virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> extractPipeline(GraphQuery const& query)
         {
             return query._pipeline;
         }
@@ -57,7 +57,7 @@ namespace graph
         GraphQuery(TGraph* g)
         {
             _engine = std::make_shared<GraphQueryEngine<TGraph>>(g);
-            _pipeline = std::make_shared<typename GraphQueryEngine<TGraph>::PipeLine>();
+            _pipeline = std::make_shared<typename GraphQueryEngine<TGraph>::PipeLineDescription>();
             _engine->setPipeline(_pipeline);
         }
 
@@ -78,6 +78,17 @@ namespace graph
         {
             // TODO template magic to pass query template outs
             return _engine->run();
+        }
+
+        inline bool done()
+        {
+            return _engine->done();
+        }
+        
+        inline typename TGraph::Node const* next()
+        {
+            // TODO template magic to pass query template outs
+            return _engine->next();
         }
     };
 }

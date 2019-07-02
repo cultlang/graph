@@ -54,7 +54,7 @@ namespace graph
         inline ~GraphQueryPipeEdges() = default;
 
     protected:
-        virtual typename Query::Pipe* init() const override
+        virtual typename Query::PipeState* init() const override
         {
             auto res = new GraphQueryPipeEdges(*this);
 

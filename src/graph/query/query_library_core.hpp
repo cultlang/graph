@@ -8,6 +8,7 @@
 #include "pipe_filter.hpp"
 #include "pipe_aggregation.hpp"
 #include "pipe_labels.hpp"
+#include "pipe_subquery.hpp"
 
 namespace graph
 {
@@ -83,5 +84,12 @@ namespace graph
         {
             return this->addPipe(std::make_unique<GraphQueryPipeBack<TGraph>>(this->engine()->requireLabel(label)));
         }
+
+        template<typename TFuncSubQuery>
+        TQueryFinal optional(TFuncSubQuery sub_query)
+        {
+            return this->addPipe(std::make_unique<GraphQueryPipeOptional<TGraph>>(extractPipeline(sub_query(newQueryPipeline()))));
+        }
     };
 }
+

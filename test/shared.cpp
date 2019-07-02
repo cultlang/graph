@@ -15,6 +15,12 @@ void test_help::fillStrGraphWithNorse(test_help::str_graph & g)
     typename test_help::str_graph::Edge* e;
 
 
+    auto audumbla = g.addNode("audumbla");
+    g.addProp("animal", audumbla);
+    g.addProp("cow", audumbla);
+
+
+
     auto tyr = g.addNode("tyr");
 
     auto mimir = g.addNode("mimir");
@@ -24,6 +30,8 @@ void test_help::fillStrGraphWithNorse(test_help::str_graph & g)
     auto burr = g.addNode("burr");
 
     auto buri = g.addNode("buri");
+    e = g.addEdge("creator", { buri, audumbla });
+    g.addProp("licked-into-being", e);
 
     e = g.addEdge("married", { burr, bestla });
 

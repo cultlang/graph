@@ -55,6 +55,23 @@ TEST_CASE( "graph::query() basics", "[graph::GraphQuery]" )
         CHECK(r.size() == 1);
     }
 
+    SECTION( "run can be called multiple times" )
+    {
+        auto q = query(&g)
+            .v(findNode(g, "thor"));
+
+        CHECK(q->getGraph() == &g);
+        CHECK(q->getPipeline()->countPipes() == 1);
+        
+        auto r0 = q.run();
+
+        CHECK(r0.size() == 1);
+
+        auto r1 = q.run();
+
+        CHECK(r1.size() == 1);
+    }
+
     SECTION( ".v() can add GraphQueryStepVertex (AKA `v`) with syntax (multiple nodes)" )
     {
         auto q = query(&g)
@@ -82,7 +99,46 @@ TEST_CASE( "graph::query() basics", "[graph::GraphQuery]" )
         CHECK(r.size() == 5);
     }
 
-    SECTION( "after running a query, reset must be called to modify" )
+    SECTION( "query can be used as a generator" )
+    {
+        auto q = query(&g)
+            .v(std::vector { findNode(g, "thor"), findNode(g, "odin") });
+
+        CHECK(q->getGraph() == &g);
+        CHECK(q->getPipeline()->countPipes() == 1);
+        
+        CHECK(q.done() == false);
+
+        auto r0 = q.next();
+        CHECK(q.done() == false);
+        REQUIRE(r0 != nullptr);
+        CHECK(r0->data == "thor");
+
+        SECTION( "and run does not interrupt it" )
+        {
+            auto r = q.run();
+
+            CHECK(r.size() == 2);
+        }
+
+        auto r1 = q.next();
+        CHECK(q.done() == false);
+        REQUIRE(r1 != nullptr);
+        CHECK(r1->data == "odin");
+
+        auto r2 = q.next();
+        CHECK(q.done() == true);
+        CHECK(r2 == nullptr);
+
+        SECTION( "and calling next past done does not break it" )
+        {
+            auto r3 = q.next();
+            CHECK(q.done() == true);
+            CHECK(r3 == nullptr);
+        }
+    }
+
+    SECTION( "during a generator run, reset must be called to modify" )
     {
         auto q = query(&g);
 
@@ -91,7 +147,7 @@ TEST_CASE( "graph::query() basics", "[graph::GraphQuery]" )
         CHECK(q->getGraph() == &g);
         CHECK(q->getPipeline()->countPipes() == 1);
 
-        auto r = q.run();
+        auto r = q.next();
 
         SECTION( "not doing so causes a recoverable exception" )
         {
@@ -104,7 +160,7 @@ TEST_CASE( "graph::query() basics", "[graph::GraphQuery]" )
         CHECK(q->getGraph() == &g);
         CHECK(q->getPipeline()->countPipes() == 2);
 
-        r = q.run();
+        r = q.next();
     }
 }
 
@@ -265,7 +321,9 @@ TEST_CASE( "graph::query() syntax label queries", "[graph::GraphQuery]" )
 
         auto r = q.run();
 
-        REQUIRE(r.size() == 1); // Thor is returned
+         // Thor is returned
+        REQUIRE(r.size() == 1);
+        CHECK(r[0]->data == "thor");
     }
 
     SECTION( ".except() can filter based on labels (large query)" )
@@ -302,5 +360,40 @@ TEST_CASE( "graph::query() syntax label queries", "[graph::GraphQuery]" )
 
         REQUIRE(r.size() == 1);
         CHECK(r[0]->data == "frigg"); // frigg is the daughter of fjorgynn who had children with one of bestla's sons
+    }
+}
+
+
+TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
+{
+    test_help::str_graph g;
+
+    test_help::fillStrGraphWithNorse(g);
+
+    SECTION( ".optional() can replace a node with an existing subquery (contrived - empty)" )
+    {
+        auto q = query(&g)
+            .v(findNode(g, "thor"))
+            .optional([](auto _) { return _.out( [](auto n, auto e) { return e->data == "creator"; } ); });
+
+        CHECK(q->getPipeline()->countPipes() == 2);
+
+        auto r = q.run();
+
+        REQUIRE(r.size() == 1);
+        CHECK(r[0]->data == "thor"); // thor has no creator (he has parents)
+    }
+
+    SECTION( ".optional() can replace a node with an existing subquery (contrived - exists)" )
+    {
+        auto q = query(&g)
+            .v(findNode(g, "thor"))
+            .optional([](auto _) { return _.out( [](auto n, auto e) { return e->data == "parents"; } ); });
+
+        CHECK(q->getPipeline()->countPipes() == 2);
+
+        auto r = q.run();
+
+        REQUIRE(r.size() == 2);  // thor has 2 parents
     }
 }
