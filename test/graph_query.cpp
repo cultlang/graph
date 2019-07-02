@@ -93,13 +93,16 @@ TEST_CASE( "graph::query() basics", "[graph::GraphQuery]" )
 
         auto r = q.run();
 
-        SECTION( "not doing so causes an exception" )
+        SECTION( "not doing so causes a recoverable exception" )
         {
             REQUIRE_THROWS_AS( q->getPipeline()->addPipe(std::make_unique<GraphQueryPipeEmpty<decltype(g)>>()), graph_error );
         }
 
         q->reset();
         q->getPipeline()->addPipe(std::make_unique<GraphQueryPipeEmpty<decltype(g)>>());
+
+        CHECK(q->getGraph() == &g);
+        CHECK(q->getPipeline()->countPipes() == 2);
 
         r = q.run();
     }
