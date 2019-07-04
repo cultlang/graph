@@ -68,6 +68,7 @@ namespace graph
 
     // state
     protected:
+        std::shared_ptr<typename Query::Gremlin> _gremlin;
         typename decltype(_markers)::const_iterator _markers_it;
 
     public:
@@ -103,17 +104,18 @@ namespace graph
             
             if (empty)
             {
+                _gremlin = gremlin;
                 _markers_it = _markers.begin();
             }
 
             typename TGraph::Node const* n;
-            while ((n = gremlin->getMarker(*_markers_it)) == nullptr)
+            while ((n = _gremlin->getMarker(*_markers_it)) == nullptr)
                 ++_markers_it;
 
             if (n != nullptr)
             {
                 ++_markers_it;
-                return Query::makeGremlin(n, gremlin);
+                return Query::makeGremlin(n, _gremlin);
             }
             else
             {
