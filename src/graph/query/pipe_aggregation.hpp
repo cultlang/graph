@@ -32,8 +32,7 @@ namespace graph
         { }
 
         inline GraphQueryPipeUnique(GraphQueryPipeUnique const&) = default;
-        inline GraphQueryPipeUnique(GraphQueryPipeUnique &&) = default;
-
+        
         inline ~GraphQueryPipeUnique() = default;
 
     protected:
@@ -58,4 +57,54 @@ namespace graph
         }
     };
     
+
+
+    template<typename TGraph>
+    class GraphQueryPipeLimit
+        : public GraphQueryEngine<TGraph>::Pipe
+    {
+    private:
+        using Query = GraphQueryEngine<TGraph>;
+
+    // config
+    protected:
+        const size_t _limit;
+
+    // state
+    protected:
+        size_t _count;
+
+    public:
+        inline GraphQueryPipeLimit(size_t limit)
+            : _limit(limit)
+            , _count(0)
+        { }
+
+        inline GraphQueryPipeLimit(GraphQueryPipeLimit const&) = default;
+
+        inline ~GraphQueryPipeLimit() = default;
+
+    protected:
+        virtual typename Query::Pipe* init() const override
+        {
+            auto res = new GraphQueryPipeLimit(*this);
+
+            return res;
+        };
+
+        inline virtual typename Query::PipeResult pipeFunc(
+            TGraph const* graph,
+            std::shared_ptr<typename Query::Gremlin> const& gremlin
+        ) override
+        {
+            if (!gremlin)
+                return Query::PipeResultEnum::Pull;
+
+            if (_count >= _limit)
+                return Query::PipeResultEnum::Done;
+
+            _count += 1;
+            return gremlin;
+        }
+    };
 }

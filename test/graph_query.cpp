@@ -307,6 +307,29 @@ TEST_CASE( "graph::query() syntax traversal queries", "[graph::GraphQuery]" )
         REQUIRE(r0.size() > r1.size());
         REQUIRE(r1.size() == 4); // Thor has 4 siblings (including himself)
     }
+
+    SECTION( ".take() ensures limited results (contrived)" )
+    {
+        auto thor = findNode(g, "thor");
+        auto q = query(&g)
+            .v(std::vector { thor, thor, thor, thor, thor })
+            .take(3);
+
+        CHECK(q->getPipeline()->countPipes() == 2);
+
+        auto r = q.run();
+
+        REQUIRE(r.size() == 3); // We only wanted 3 thors
+
+        q = q
+            .out( [](auto n, auto e) { return e->data == "parents"; } );
+
+        CHECK(q->getPipeline()->countPipes() == 3);
+
+        r = q.run();
+
+        REQUIRE(r.size() == 6); // We only wanted 3 thors * 2 parents
+    }
 }
 
 TEST_CASE( "graph::query() syntax label queries", "[graph::GraphQuery]" )

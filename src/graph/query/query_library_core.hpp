@@ -73,6 +73,11 @@ namespace graph
         {
             return this->addPipe(std::make_unique<GraphQueryPipeUnique<TGraph>>());
         }
+        
+        TQueryFinal take(size_t limit)
+        {
+            return this->addPipe(std::make_unique<GraphQueryPipeLimit<TGraph>>(limit));
+        }
 
         TQueryFinal as(std::string const& marker)
         {
