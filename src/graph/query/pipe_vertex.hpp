@@ -37,8 +37,9 @@ namespace graph
             , _it(_nodes.end())
         { }
 
-        inline GraphQueryPipeVertex(GraphQueryPipeVertex const&) = default;
-        inline GraphQueryPipeVertex(GraphQueryPipeVertex &&) = default;
+        inline GraphQueryPipeVertex(GraphQueryPipeVertex const& that)
+            : GraphQueryPipeVertex(that._nodes)
+        { }
 
         inline ~GraphQueryPipeVertex() = default;
 

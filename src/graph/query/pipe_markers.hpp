@@ -15,7 +15,7 @@ namespace graph
 {
 
     template<typename TGraph>
-    class GraphQueryPipeLabel
+    class GraphQueryPipeMark
         : public GraphQueryEngine<TGraph>::Pipe
     {
     private:
@@ -23,20 +23,19 @@ namespace graph
 
     // config
     protected:
-        size_t _label;
+        size_t _mark;
 
     // state
     protected:
 
     public:
-        inline GraphQueryPipeLabel(size_t label)
-            : _label(label)
+        inline GraphQueryPipeMark(size_t mark)
+            : _mark(mark)
         { }
 
-        inline GraphQueryPipeLabel(GraphQueryPipeLabel const&) = default;
-        inline GraphQueryPipeLabel(GraphQueryPipeLabel &&) = default;
+        inline GraphQueryPipeMark(GraphQueryPipeMark const&) = default;
 
-        inline ~GraphQueryPipeLabel() = default;
+        inline ~GraphQueryPipeMark() = default;
 
     protected:
         inline virtual void cleanup() override { };
@@ -49,9 +48,77 @@ namespace graph
             if (!gremlin)
                 return Query::PipeResultEnum::Pull;
             
-            gremlin->labels[_label] = gremlin->node;
+            gremlin->marks[_mark] = gremlin->node;
 
             return gremlin;
+        }
+    };
+
+    
+    template<typename TGraph>
+    class GraphQueryPipeMerge
+        : public GraphQueryEngine<TGraph>::Pipe
+    {
+    private:
+        using Query = GraphQueryEngine<TGraph>;
+
+    // config
+    protected:
+        std::vector<size_t> _markers;
+
+    // state
+    protected:
+        typename decltype(_markers)::const_iterator _markers_it;
+
+    public:
+        inline GraphQueryPipeMerge(std::vector<size_t> markers)
+            : _markers(markers)
+            , _markers_it(_markers.end())
+        { }
+
+        inline GraphQueryPipeMerge(GraphQueryPipeMerge const& that)
+            : GraphQueryPipeMerge(that._markers)
+        { }
+
+        inline ~GraphQueryPipeMerge() = default;
+
+    protected:
+        inline virtual void cleanup() override { };
+
+        virtual typename Query::PipeState* init() const override
+        {
+            auto res = new GraphQueryPipeMerge(*this);
+
+            return res;
+        };
+
+        inline virtual typename Query::PipeResult pipeFunc(
+            TGraph const* graph,
+            std::shared_ptr<typename Query::Gremlin> const& gremlin
+        ) override
+        {
+            auto empty = _markers_it == _markers.end();
+            if (!gremlin && empty)
+                return Query::PipeResultEnum::Pull;
+            
+            if (empty)
+            {
+                _markers_it = _markers.begin();
+            }
+
+            typename TGraph::Node const* n;
+            while ((n = gremlin->getMarker(*_markers_it)) == nullptr)
+                ++_markers_it;
+
+            if (n != nullptr)
+            {
+                ++_markers_it;
+                return Query::makeGremlin(n, gremlin);
+            }
+            else
+            {
+                return Query::PipeResultEnum::Pull;
+            }
         }
     };
 
@@ -65,18 +132,17 @@ namespace graph
 
     // config
     protected:
-        size_t _label;
+        size_t _marker;
 
     // state
     protected:
 
     public:
-        inline GraphQueryPipeExcept(size_t label)
-            : _label(label)
+        inline GraphQueryPipeExcept(size_t marker)
+            : _marker(marker)
         { }
 
         inline GraphQueryPipeExcept(GraphQueryPipeExcept const&) = default;
-        inline GraphQueryPipeExcept(GraphQueryPipeExcept &&) = default;
 
         inline ~GraphQueryPipeExcept() = default;
 
@@ -91,7 +157,7 @@ namespace graph
             if (!gremlin)
                 return Query::PipeResultEnum::Pull;
             
-            if (gremlin->getLabel(_label) == gremlin->node)
+            if (gremlin->getMarker(_marker) == gremlin->node)
                 return Query::PipeResultEnum::Pull;
 
             return gremlin;
@@ -108,18 +174,17 @@ namespace graph
 
     // config
     protected:
-        size_t _label;
+        size_t _marker;
 
     // state
     protected:
 
     public:
-        inline GraphQueryPipeBack(size_t label)
-            : _label(label)
+        inline GraphQueryPipeBack(size_t marker)
+            : _marker(marker)
         { }
 
         inline GraphQueryPipeBack(GraphQueryPipeBack const&) = default;
-        inline GraphQueryPipeBack(GraphQueryPipeBack &&) = default;
 
         inline ~GraphQueryPipeBack() = default;
 
@@ -134,7 +199,7 @@ namespace graph
             if (!gremlin)
                 return Query::PipeResultEnum::Pull;
             
-            return GraphQueryEngine<TGraph>::gotoVertex(gremlin, gremlin->getLabel(_label));
+            return GraphQueryEngine<TGraph>::gotoVertex(gremlin, gremlin->getMarker(_marker));
         }
     };
 

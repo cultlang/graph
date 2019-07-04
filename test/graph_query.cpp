@@ -326,6 +326,24 @@ TEST_CASE( "graph::query() syntax label queries", "[graph::GraphQuery]" )
         CHECK(r[0]->data == "thor");
     }
 
+    SECTION( ".marge() can merge based on labels (large query)" )
+    {
+        auto q = query(&g)
+            .v(findNode(g, "thor"))
+            .out( [](auto n, auto e) { return e->data == "parents"; } )
+            .as("parent")
+            .out( [](auto n, auto e) { return e->data == "parents"; } )
+            .as("grand-parent")
+            .merge({ "parent", "grand-parent" })
+            .unique();
+
+        CHECK(q->getPipeline()->countPipes() == 7);
+
+        auto r = q.run();
+
+        REQUIRE(r.size() == 6); // Thor has 2 + 4 parents-esque
+    }
+
     SECTION( ".except() can filter based on labels (large query)" )
     {
         auto q = query(&g)

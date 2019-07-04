@@ -30,13 +30,13 @@ namespace graph
         public:
             typename TGraph::Node const* node;
 
-            std::map<size_t, typename TGraph::Node const*> labels;
+            std::map<size_t, typename TGraph::Node const*> marks;
 
         public:
-            typename TGraph::Node const* getLabel(size_t label) const
+            typename TGraph::Node const* getMarker(size_t mark) const
             {
-                auto it = labels.find(label);
-                if ( it == labels.end() )
+                auto it = marks.find(mark);
+                if ( it == marks.end() )
                     return nullptr;
                 else
                     return it->second;
@@ -374,8 +374,8 @@ namespace graph
         std::shared_ptr<PipeLineDescription> _pipelineDescription;
         PipeLineState* _pipelineState;
 
-        size_t _labelCounter;
-        std::map<std::string, size_t> _labels;
+        size_t _markerCounter;
+        std::map<std::string, size_t> _markers;
 
     // state
     private:
@@ -385,15 +385,15 @@ namespace graph
         GraphQueryEngine()
             : _pipelineDescription()
             , _pipelineState(nullptr)
-            , _labelCounter(0)
-            , _labels()
+            , _markerCounter(0)
+            , _markers()
             , _graph(nullptr)
         { }
         GraphQueryEngine(TGraph* g)
             : _pipelineDescription()
             , _pipelineState(nullptr)
-            , _labelCounter(0)
-            , _labels()
+            , _markerCounter(0)
+            , _markers()
             , _graph(g)
         { }
 
@@ -423,18 +423,18 @@ namespace graph
             return _graph;
         }
 
-        inline size_t requireLabel(std::string const& label)
+        inline size_t requireMarker(std::string const& label)
         {
-            auto lb = _labels.lower_bound(label);
+            auto lb = _markers.lower_bound(label);
 
-            if(lb != _labels.end() && !(_labels.key_comp()(label, lb->first)))
+            if(lb != _markers.end() && !(_markers.key_comp()(label, lb->first)))
             {
                 return lb->second;
             }
             else
             {
-                auto id = ++_labelCounter;
-                _labels.insert(lb, typename decltype(_labels)::value_type(label, id));
+                auto id = ++_markerCounter;
+                _markers.insert(lb, typename decltype(_markers)::value_type(label, id));
                 return id;
             }
         }

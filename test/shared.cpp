@@ -50,12 +50,16 @@ void test_help::fillStrGraphWithNorse(test_help::str_graph & g)
     auto hoenir = g.addNode("hoenir");
     e = g.addEdge("parents", { hoenir, bestla, burr });
 
+    auto annar = g.addNode("annar");
+
+    auto nott = g.addNode("nott");
 
 
     auto odin = g.addNode("odin");
     e = g.addEdge("parents", { odin, bestla, burr });
 
     auto jord = g.addNode("jord");
+    e = g.addEdge("parents", { jord, bestla, annar, nott });
 
     auto frigg = g.addNode("frigg");
     e = g.addEdge("parents", { frigg, fjorgynn_wife, fjorgynn });

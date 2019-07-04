@@ -48,8 +48,9 @@ namespace graph
             , _nodes_it(_nodes.end())
         { }
 
-        inline GraphQueryPipeEdges(GraphQueryPipeEdges const&) = default;
-        inline GraphQueryPipeEdges(GraphQueryPipeEdges &&) = default;
+        inline GraphQueryPipeEdges(GraphQueryPipeEdges const& that)
+            : GraphQueryPipeEdges(_func_edges, _func_edgeNodes)
+        { }
 
         inline ~GraphQueryPipeEdges() = default;
 

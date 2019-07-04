@@ -7,7 +7,7 @@
 #include "pipe_edge.hpp"
 #include "pipe_filter.hpp"
 #include "pipe_aggregation.hpp"
-#include "pipe_labels.hpp"
+#include "pipe_markers.hpp"
 #include "pipe_subquery.hpp"
 
 namespace graph
@@ -70,19 +70,30 @@ namespace graph
             return this->addPipe(std::make_unique<GraphQueryPipeUnique<TGraph>>());
         }
 
-        TQueryFinal as(std::string const& label)
+        TQueryFinal as(std::string const& marker)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeLabel<TGraph>>(this->engine()->requireLabel(label)));
+            return this->addPipe(std::make_unique<GraphQueryPipeMark<TGraph>>(this->engine()->requireMarker(marker)));
         }
 
-        TQueryFinal except(std::string const& label)
+        TQueryFinal merge(std::vector<std::string> const& markers)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeExcept<TGraph>>(this->engine()->requireLabel(label)));
+            std::vector<size_t> marker_values;
+            marker_values.resize(markers.size());
+            auto& engine = this->engine();
+            std::transform(markers.begin(), markers.end(), marker_values.begin(),
+                [&](auto s) { return engine->requireMarker(s); });
+
+            return this->addPipe(std::make_unique<GraphQueryPipeMerge<TGraph>>(marker_values));
         }
 
-        TQueryFinal back(std::string const& label)
+        TQueryFinal except(std::string const& marker)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeBack<TGraph>>(this->engine()->requireLabel(label)));
+            return this->addPipe(std::make_unique<GraphQueryPipeExcept<TGraph>>(this->engine()->requireMarker(marker)));
+        }
+
+        TQueryFinal back(std::string const& marker)
+        {
+            return this->addPipe(std::make_unique<GraphQueryPipeBack<TGraph>>(this->engine()->requireMarker(marker)));
         }
 
         template<typename TFuncSubQuery>
