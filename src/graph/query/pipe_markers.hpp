@@ -52,7 +52,7 @@ namespace graph
             if (!gremlin)
                 return Query::PipeResultEnum::Pull;
             
-            gremlin->marks[_mark] = gremlin->node;
+            gremlin->marks[_mark] = gremlin->node();
 
             return gremlin;
         }
@@ -163,7 +163,7 @@ namespace graph
             if (!gremlin)
                 return Query::PipeResultEnum::Pull;
             
-            if (gremlin->getMarker(_marker) == gremlin->node)
+            if (gremlin->getMarker(_marker) == gremlin->node())
                 return Query::PipeResultEnum::Pull;
 
             return gremlin;

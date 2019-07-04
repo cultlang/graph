@@ -122,7 +122,7 @@ namespace graph
             {
                 _gremlin = gremlin;
 
-                auto n = _gremlin->node;
+                auto n = _gremlin->node();
                 _edges = collectEdges(*graph, n,
                     [&](auto e) { return _modeFilterEdges(n, e) && _func_edges(n, e); });
                 _edges_it = _edges.begin();
@@ -137,7 +137,7 @@ namespace graph
 
                 // TODO: simplyfy this, we know which nodes on the edge are the ones we want to
                 //   traverse, we may want to revert our iterator paradigm too.
-                auto n = _gremlin->node;
+                auto n = _gremlin->node();
                 auto e = (typename TGraph::Edge const*) *(_edges_it ++);
                 _nodes = collectNodes(*graph, e, 
                     [&](auto en) { return _modeFilterEdgeNodes(n, e, en) && _func_edgeNodes(n, e, en); });

@@ -32,7 +32,7 @@ namespace graph
         { }
 
         inline GraphQueryPipeUnique(GraphQueryPipeUnique const&) = default;
-        
+
         inline ~GraphQueryPipeUnique() = default;
 
     protected:
@@ -50,9 +50,9 @@ namespace graph
         {
             if (!gremlin)
                 return Query::PipeResultEnum::Pull;
-            if (_seen.count(gremlin->node))
+            if (_seen.count(gremlin->node()))
                 return Query::PipeResultEnum::Pull;
-            _seen.insert(gremlin->node);
+            _seen.insert(gremlin->node());
             return gremlin;
         }
     };

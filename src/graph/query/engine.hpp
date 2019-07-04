@@ -32,9 +32,17 @@ namespace graph
         class Gremlin
         {
         public:
-            typename TGraph::Node const* node;
+            typename TGraph::Core const* graphObject;
 
             std::map<size_t, typename TGraph::Node const*> marks;
+
+        public:
+            typename TGraph::Node const* node() const
+            {
+                assert(TGraph::isNode(graphObject));
+                return (TGraph::Node const*)graphObject;
+            }
+
 
         public:
             typename TGraph::Node const* getMarker(size_t mark) const
@@ -349,7 +357,7 @@ namespace graph
         static inline std::shared_ptr<Gremlin> makeGremlin(typename TGraph::Node const* node)
         {
             std::shared_ptr<Gremlin> ret = std::make_shared<Gremlin>();
-            ret->node = node;
+            ret->graphObject = node;
 
             return ret;
         }
@@ -359,7 +367,7 @@ namespace graph
                 return makeGremlin(node);
 
             std::shared_ptr<Gremlin> ret = std::make_shared<Gremlin>(*original);
-            ret->node = node;
+            ret->graphObject = node;
 
             return ret;
         }
@@ -471,7 +479,7 @@ namespace graph
 
             auto res = _pipelineState->next(_graph);
 
-            return res ? res->node : nullptr;
+            return res ? res->node() : nullptr;
         }
 
         inline std::vector<typename TGraph::Node const*> run()
@@ -488,7 +496,7 @@ namespace graph
             ret.reserve(results.size());
             for (auto grem : results)
             {
-                ret.push_back(grem->node);
+                ret.push_back(grem->node());
             }
 
             return ret;

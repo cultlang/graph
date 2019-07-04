@@ -262,7 +262,7 @@ TEST_CASE( "graph::query() syntax traversal queries", "[graph::GraphQuery]" )
     {
         auto q = query(&g)
             .v(std::vector { findNode(g, "thor"), findNode(g, "odin"), findNode(g, "odr") })
-            .filter( [](auto n, auto g) { return g->node->data[0] != 'o'; } );
+            .filter( [](auto n, auto g) { return g->node()->data[0] != 'o'; } );
 
         CHECK(q->getPipeline()->countPipes() == 2);
         

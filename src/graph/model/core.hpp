@@ -127,6 +127,7 @@ namespace graph
             using MetaFlags = typename TFinal::MetaFlags;
             using CoreData = typename TFinal::CoreData;
 
+            using Core = typename TFinal::Core;
             using Label = typename TFinal::Label;
             using Node = typename TFinal::Node;
             using Edge = typename TFinal::Edge;

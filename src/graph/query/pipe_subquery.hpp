@@ -77,7 +77,7 @@ namespace graph
                 _gremlin = gremlin;
 
                 // TODO use gremlin source to inject gremlins
-                vertex_state->setNode(gremlin->node);
+                vertex_state->setNode(gremlin->node());
             }
 
             auto subquery_result = _state.next(graph);
@@ -101,7 +101,7 @@ namespace graph
             }
             else
             {
-                result = GraphQueryEngine<TGraph>::gotoVertex(_gremlin, subquery_result->node);
+                result = GraphQueryEngine<TGraph>::gotoVertex(_gremlin, subquery_result->node());
             }
             
             
