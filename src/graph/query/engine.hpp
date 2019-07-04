@@ -107,6 +107,20 @@ namespace graph
             }
 
         public:
+            inline void insertPipe(size_t i, std::unique_ptr<PipeDescription> && pipe)
+            {
+                int32_t expected = 0;
+                if (i > _pipes.size())
+                    throw graph_error("Index out of range for insert.");
+
+                if (!_inUse.compare_exchange_strong(expected, -1))
+                    throw graph_error("PipeLineDescription is in use, clone or wait for queries to finish.");
+
+                _pipes.insert(_pipes.begin() + i, std::move(pipe));
+
+                _inUse = 0;
+            }
+
             inline void addPipe(std::unique_ptr<PipeDescription> && pipe)
             {
                 int32_t expected = 0;
@@ -199,6 +213,15 @@ namespace graph
                 _i_begin();
             }
 
+            inline PipeState* get(size_t index)
+            {
+                return _state.at(index);
+            }
+            inline PipeState const* get(size_t index) const
+            {
+                return _state.at(index);
+            }
+
         // Interpreter
         private:
             size_t _i_max, _i_done, _i_pc;
@@ -219,7 +242,7 @@ namespace graph
                 return _i_done < _i_max;
             }
 
-            inline std::shared_ptr<Gremlin> _i_step(TGraph* graph)
+            inline std::shared_ptr<Gremlin> _i_step(TGraph const* graph)
             {
                 std::shared_ptr<Gremlin> result_gremlin = nullGremlin();
 
@@ -274,7 +297,7 @@ namespace graph
                 return result_gremlin;
             }
 
-            inline std::shared_ptr<Gremlin> _i_next(TGraph* graph)
+            inline std::shared_ptr<Gremlin> _i_next(TGraph const* graph)
             {
                 while (_i_shouldContinue())
                 {
@@ -298,7 +321,7 @@ namespace graph
                 return !_i_shouldContinue();
             }
 
-            inline std::shared_ptr<Gremlin> next(TGraph* graph)
+            inline std::shared_ptr<Gremlin> next(TGraph const* graph)
             {
                 return _i_next(graph);
             }

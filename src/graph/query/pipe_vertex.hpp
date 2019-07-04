@@ -47,12 +47,21 @@ namespace graph
         inline void setNodes(std::vector<typename TGraph::Node const*> nodes)
         {
             _nodes = nodes;
-            _it = _nodes.end();
+            _it = _nodes.begin();
         }
         inline void setNode(typename TGraph::Node const* node)
         {
             _nodes = { node };
-            _it = _nodes.end();
+            _it = _nodes.begin();
+        }
+        inline std::vector<typename TGraph::Node const*> const& getNodes() const
+        {
+            return _nodes;
+        }
+        inline void clear()
+        {
+            _nodes.clear();
+            _it = _nodes.begin();
         }
 
     protected:

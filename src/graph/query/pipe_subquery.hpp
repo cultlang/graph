@@ -25,17 +25,18 @@ namespace graph
     // state
     protected:
         PipeLineState _state;
+        std::shared_ptr<typename Query::Gremlin> _gremlin;
 
     private:
         inline static std::shared_ptr<PipeLineDescription> _fixupPipeline(std::shared_ptr<PipeLineDescription> pipeline)
         {
-            pipeline->addPipe(std::make_unique<GraphQueryPipeVertex<TGraph>>());
+            pipeline->insertPipe(0, std::make_unique<GraphQueryPipeVertex<TGraph>>());
             return pipeline;
         }
 
     public:
         inline GraphQueryPipeOptional(std::shared_ptr<PipeLineDescription> pipeline)
-            : _pipeline(pipeline)
+            : _pipeline(_fixupPipeline(pipeline))
             , _state(_pipeline)
         { }
 
@@ -47,15 +48,60 @@ namespace graph
     protected:
         inline virtual void cleanup() override { };
 
+        virtual typename Query::PipeState* init() const override
+        {
+            auto res = new GraphQueryPipeOptional(*this);
+            res->_state.init();
+
+            return res;
+        };
+
         inline virtual typename Query::PipeResult pipeFunc(
             TGraph const* graph,
             std::shared_ptr<typename Query::Gremlin> const& gremlin
         ) override
         {
-            if (!gremlin)
+            auto vertex_state = (GraphQueryPipeVertex<TGraph>*)_state.get(0);
+            auto empty = vertex_state->getNodes().size() == 0;
+
+            if (!gremlin && empty)
                 return Query::PipeResultEnum::Pull;
 
-            return gremlin;
+            // we have a gremlin to begin the query with
+            if (empty)
+            {
+                _gremlin = gremlin;
+
+                // TODO use gremlin source to inject gremlins
+                vertex_state->setNode(gremlin->node);
+            }
+
+            auto subquery_result = _state.next(graph);
+            typename Query::PipeResult result;
+
+            if (_state.done()) // subquery_result == null
+            {
+                if (gremlin)
+                // There was no result on the pipeline
+                // return the gremlin
+                {
+                    result = gremlin;
+                }
+                else
+                {
+                    result = Query::PipeResultEnum::Pull;
+                }
+
+                _gremlin = nullptr;
+                vertex_state->clear();
+            }
+            else
+            {
+                result = GraphQueryEngine<TGraph>::gotoVertex(_gremlin, subquery_result->node);
+            }
+            
+            
+            return result;
         }
     };
 

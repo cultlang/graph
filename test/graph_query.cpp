@@ -370,7 +370,7 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
 
     test_help::fillStrGraphWithNorse(g);
 
-    SECTION( ".optional() can replace a node with an existing subquery (contrived - empty)" )
+    SECTION( ".optional() can replace a node with an existing subquery (contrived - empty path)" )
     {
         auto q = query(&g)
             .v(findNode(g, "thor"))
@@ -384,7 +384,7 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
         CHECK(r[0]->data == "thor"); // thor has no creator (he has parents)
     }
 
-    SECTION( ".optional() can replace a node with an existing subquery (contrived - exists)" )
+    SECTION( ".optional() can replace a node with an existing subquery (contrived - with existing path)" )
     {
         auto q = query(&g)
             .v(findNode(g, "thor"))
