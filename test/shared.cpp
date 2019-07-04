@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "shared.h"
 
 using namespace graph;
@@ -9,6 +13,15 @@ void test_help::fillStrGraphWithNorse(test_help::str_graph & g)
     /* Data Model:
      * - [Edges]
      *   - parents: where possible is organized (child, mother, father)
+     *   - married: where possible is organized (husband, wife)
+     *   - creator: (creator, createe)
+     *     - [Props]
+     *       - licked-into-being: the creator licked the createe into being
+     * - [Nodes]
+     *   - Nodes are always the name of a person or thing, lower case
+     *   - [Props]
+     *     - animal: the node is an animal (not a person)
+     *     - cow: the node is specifically a cow
      */ 
 
     // Helper temporaries
