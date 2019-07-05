@@ -27,7 +27,7 @@ http_archive(
 )
 
 ########################
-# Fmt
+# fmt
 http_archive(
     name = "fmt",
     urls = ["https://github.com/cgrinker/fmt/archive/f16f77297e6bb4df38d4c858edb3295f55716cb4.zip"],
@@ -36,7 +36,7 @@ http_archive(
 )
 
 ########################
-# Fmt
+# replxx
 http_archive(
     name = "replxx",
     urls = ["https://github.com/cgrinker/replxx/archive/46dfaf9bbebe517bfd1930f2e11f4b47b1a0b7f1.zip"],
