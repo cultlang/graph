@@ -16,7 +16,6 @@ cc_library(
     ],
     copts = select({
         "@bazel_tools//src/conditions:windows": ["/std:c++17"],
-        "@bazel_tools//src/conditions:darwin": ["-std=c++17"],
         "//conditions:default": ["-std=c++17"],
     }),
     deps=[
@@ -35,7 +34,6 @@ cc_test(
     ]),
     copts = select({
         "@bazel_tools//src/conditions:windows": ["/std:c++17"],
-        "@bazel_tools//src/conditions:darwin": ["-std=c++17"],
         "//conditions:default": ["-std=c++17"],
     }),
     deps = [
@@ -52,7 +50,6 @@ cc_binary(
     ]),
     copts = select({
         "@bazel_tools//src/conditions:windows": ["/std:c++17"],
-        "@bazel_tools//src/conditions:darwin": ["-std=c++17"],
         "//conditions:default": ["-std=c++17"],
     }),
     deps = [
