@@ -108,7 +108,7 @@ namespace graph
         template<typename TFuncSubQuery>
         TQueryFinal optional(TFuncSubQuery sub_query)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeOptional<TGraph>>(extractPipeline(sub_query(newQueryPipeline()))));
+            return this->addPipe(std::make_unique<GraphQueryPipeOptional<TGraph>>(this->extractPipeline(sub_query(this->newQueryPipeline()))));
         }
     };
 }

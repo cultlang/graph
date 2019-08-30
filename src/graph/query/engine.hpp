@@ -40,7 +40,7 @@ namespace graph
             typename TGraph::Node const* node() const
             {
                 assert(TGraph::isNode(graphObject));
-                return (TGraph::Node const*)graphObject;
+                return (typename TGraph::Node const*)graphObject;
             }
 
 

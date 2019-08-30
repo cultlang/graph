@@ -18,16 +18,21 @@ namespace graph
     {
         template<typename Func,
             typename... Args>
-        inline bool invoke_return_bool_or_true(Func func, Args&& ...args)
+        inline std::enable_if_t<std::is_void<std::invoke_result_t<Func, Args...>>::value,
+            bool> invoke_return_bool_or_true(Func func, Args&& ...args)
         {
-            if constexpr (std::is_void<typename std::invoke_result<Func, Args...>::type>::value)
-            {
-                func(std::forward<Args>(args)...);
-                return true;
-            }
-            else
-                return func(std::forward<Args>(args)...);
+            func(std::forward<Args>(args)...);
+            return true;
         }
+
+        template<typename Func,
+            typename... Args>
+        inline std::enable_if_t<!std::is_void<std::invoke_result_t<Func, Args...>>::value,
+            bool> invoke_return_bool_or_true(Func func, Args&& ...args)
+        {
+            return func(std::forward<Args>(args)...);
+        }
+                
     }
 
     enum class GraphKind : uint8_t

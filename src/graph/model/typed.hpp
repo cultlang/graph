@@ -105,7 +105,7 @@ namespace graph
             }
             
             // By default edges point from 0-index to all others
-            inline Edge* addEdge(CoreData const& data, TypeId type, std::vector<Node*> const& nodes, bool invert = false)
+            inline Edge* addEdge(CoreData const& data, TypeId type, std::vector<Node const*> const& nodes, bool invert = false)
             {
                 auto ret = Base::addEdge(data, nodes, invert);
                 ret->type = type;
@@ -114,7 +114,7 @@ namespace graph
             }
 
             template<typename T>
-            inline Edge* addEdge(T const& data, std::vector<Node*> const& nodes, bool invert = false)
+            inline Edge* addEdge(T const& data, std::vector<Node const*> const& nodes, bool invert = false)
             {
                 return addEdge(Config::template typed_store<T>(data), Config::template typed_typeToValue<T>(), nodes, invert);
             }
@@ -169,6 +169,7 @@ namespace graph
             using Base::forAllNodes;
             using Base::forAllEdges;
             using Base::forAllNodesInLabel;
+            using Base::forAllNodesInEdge;
             using Base::forAllLabelsOnNode;
             using Base::forAllEdgesOnNode;
             using Base::forAllPropsOnNode;
