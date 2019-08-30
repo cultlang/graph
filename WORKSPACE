@@ -1,4 +1,4 @@
-workspace(name = "ninja_ob1_cultlang_graph")
+workspace(name = "cultlang_graph")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
@@ -7,7 +7,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 ########################
 # cultlang
 git_repository(
-    name = "stdext",
+    name = "cultlang_stdext",
     remote = "https://github.com/cultlang/stdext",
     tag = "v1.0.0"
 )
