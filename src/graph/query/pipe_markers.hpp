@@ -18,6 +18,10 @@
 namespace graph
 {
 
+	/******************************************************************************
+	** GraphQueryPipeMark
+	******************************************************************************/
+
     template<typename TGraph>
     class GraphQueryPipeMark
         : public GraphQueryEngine<TGraph>::Pipe
@@ -58,7 +62,10 @@ namespace graph
         }
     };
 
-    
+	/******************************************************************************
+	** GraphQueryPipeMerge
+	******************************************************************************/
+
     template<typename TGraph>
     class GraphQueryPipeMerge
         : public GraphQueryEngine<TGraph>::Pipe
@@ -128,6 +135,9 @@ namespace graph
         }
     };
 
+	/******************************************************************************
+	** GraphQueryPipeExcept
+	******************************************************************************/
 
     template<typename TGraph>
     class GraphQueryPipeExcept
@@ -170,6 +180,9 @@ namespace graph
         }
     };
 
+	/******************************************************************************
+	** GraphQueryPipeBack
+	******************************************************************************/
 
     template<typename TGraph>
     class GraphQueryPipeBack

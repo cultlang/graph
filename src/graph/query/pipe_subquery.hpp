@@ -13,8 +13,12 @@
 namespace graph
 {
 
+	/******************************************************************************
+	** GraphQuerySubQueryBase
+	******************************************************************************/
+
     template<typename TGraph>
-    class GraphQueryPipeOptional
+    class GraphQuerySubQueryBase
         : public GraphQueryEngine<TGraph>::Pipe
     {
     private:
@@ -39,22 +43,24 @@ namespace graph
         }
 
     public:
-        inline GraphQueryPipeOptional(std::shared_ptr<PipeLineDescription> pipeline)
+        inline GraphQuerySubQueryBase(std::shared_ptr<PipeLineDescription> pipeline)
             : _pipeline(_fixupPipeline(pipeline))
             , _state(_pipeline)
         { }
 
-        inline GraphQueryPipeOptional(GraphQueryPipeOptional const&) = default;
-        inline GraphQueryPipeOptional(GraphQueryPipeOptional &&) = default;
+        inline GraphQuerySubQueryBase(GraphQuerySubQueryBase const&) = default;
+        inline GraphQuerySubQueryBase(GraphQuerySubQueryBase &&) = default;
 
-        inline ~GraphQueryPipeOptional() = default;
+        inline ~GraphQuerySubQueryBase() = default;
+
+    protected:
 
     protected:
         inline virtual void cleanup() override { };
 
         virtual typename Query::PipeState* init() const override
         {
-            auto res = new GraphQueryPipeOptional(*this);
+            auto res = new GraphQuerySubQueryBase(*this);
             res->_state.init();
 
             return res;
@@ -104,9 +110,95 @@ namespace graph
                 result = GraphQueryEngine<TGraph>::gotoVertex(_gremlin, subquery_result->node());
             }
             
+            return result;
+        }
+    };
+
+	/******************************************************************************
+	** GraphQueryPipeOptional
+	******************************************************************************/
+
+    template<typename TGraph>
+    class GraphQueryPipeOptional
+        : public GraphQuerySubQueryBase<TGraph>
+    {
+    private:
+        using Query = GraphQueryEngine<TGraph>;
+        using PipeLineDescription = typename Query::PipeLineDescription;
+        using PipeLineState = typename Query::PipeLineState;
+
+        using Base = GraphQuerySubQueryBase<TGraph>;
+
+    // config
+    protected:
+
+    // state
+    protected:
+
+    private:
+
+    public:
+        inline GraphQueryPipeOptional(std::shared_ptr<PipeLineDescription> pipeline)
+            : Base(_pipeline)
+        { }
+
+        inline GraphQueryPipeOptional(GraphQueryPipeOptional const&) = default;
+        inline GraphQueryPipeOptional(GraphQueryPipeOptional &&) = default;
+
+        inline ~GraphQueryPipeOptional() = default;
+
+    protected:
+
+        inline virtual typename Query::PipeResult pipeFunc(
+            TGraph const* graph,
+            std::shared_ptr<typename Query::Gremlin> const& gremlin
+        ) override
+        {
+            auto vertex_state = (GraphQueryPipeVertex<TGraph>*)_state.get(0);
+            auto empty = vertex_state->getNodes().size() == 0;
+
+            if (!gremlin && empty)
+                return Query::PipeResultEnum::Pull;
+
+            // we have a gremlin to begin the query with
+            if (empty)
+            {
+                _gremlin = gremlin;
+
+                // TODO use gremlin source to inject gremlins
+                vertex_state->setNode(gremlin->node());
+            }
+
+            auto subquery_result = _state.next(graph);
+            typename Query::PipeResult result;
+
+            if (_state.done()) // subquery_result == null
+            {
+                if (gremlin)
+                // There was no result on the pipeline
+                // return the gremlin
+                {
+                    result = gremlin;
+                }
+                else
+                {
+                    result = Query::PipeResultEnum::Pull;
+                }
+
+                _gremlin = nullptr;
+                vertex_state->clear();
+            }
+            else
+            {
+                result = GraphQueryEngine<TGraph>::gotoVertex(_gremlin, subquery_result->node());
+            }
             
             return result;
         }
     };
+
+	/******************************************************************************
+	** GraphQueryPipeRepeatUntil
+	******************************************************************************/
 
 }

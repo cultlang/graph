@@ -11,6 +11,10 @@
 namespace graph
 {
 
+	/******************************************************************************
+	** GraphQueryPipeEmpty
+	******************************************************************************/
+
     template<typename TGraph>
     class GraphQueryPipeEmpty
         : public GraphQueryEngine<TGraph>::Pipe

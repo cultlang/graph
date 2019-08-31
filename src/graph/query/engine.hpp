@@ -102,7 +102,7 @@ namespace graph
 
         class PipeLineDescription
         {
-            std::vector<std::unique_ptr<PipeDescription>> _pipes;
+            std::vector<std::shared_ptr<PipeDescription>> _pipes;
             mutable std::atomic<int32_t> _inUse;
 
             friend class PipeLineState;
@@ -140,6 +140,27 @@ namespace graph
                     throw graph_error("PipeLineDescription is in use, clone or wait for queries to finish.");
 
                 _pipes.push_back(std::move(pipe));
+
+                _inUse = 0;
+            }
+
+            inline void appendPipes(std::shared_ptr<PipeLineDescription> description)
+            {
+                int32_t expected_this = 0;
+                int32_t expected_that = 0;
+                if (0 == description->_pipes.size())
+                    throw graph_error("Empty description.");
+
+                if (!_inUse.compare_exchange_strong(expected_this, -1))
+                    throw graph_error("PipeLineDescription is in use, clone or wait for queries to finish.");
+
+                if (!description->_inUse.compare_exchange_strong(expected_that, -1))
+                    throw graph_error("PipeLineDescription (that) is in use, clone or wait for queries to finish.");
+
+                for (auto it : description->_pipes)
+                {
+                    _pipes.push_back(it);
+                }
 
                 _inUse = 0;
             }

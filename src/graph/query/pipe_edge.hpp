@@ -20,6 +20,9 @@ namespace graph
         Outgoing
     };
 
+	/******************************************************************************
+	** GraphQueryPipeEdges
+	******************************************************************************/
 
     template<typename TGraph, GraphQueryPipeEdgesEnum EMode, typename TFuncEdges, typename TFuncEdgeNodes>
     class GraphQueryPipeEdges

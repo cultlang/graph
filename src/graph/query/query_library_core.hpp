@@ -110,6 +110,24 @@ namespace graph
         {
             return this->addPipe(std::make_unique<GraphQueryPipeOptional<TGraph>>(this->extractPipeline(sub_query(this->newQueryPipeline()))));
         }
+
+        template<typename TFuncSubQuery>
+        TQueryFinal repeat_times(TFuncSubQuery sub_query, size_t times)
+        {
+            auto pipe_desc = this->extractPipeline(sub_query(this->newQueryPipeline()));
+            for (int i = 0; i < times; ++i)
+            {
+                this->appendPipes(pipe_desc);
+            }
+
+            return std::move(this);
+        }
+
+        template<typename TFuncSubQuery, typename TFuncUntil>
+        TQueryFinal repeat_until(TFuncSubQuery sub_query, TFuncUntil until)
+        {
+            return this->addPipe(std::make_unique<GraphQueryPipeRepeatUntil<TGraph, TFuncUntil>>(this->extractPipeline(sub_query(this->newQueryPipeline())), until));
+        }
     };
 }
 

@@ -12,6 +12,10 @@
 namespace graph
 {
 
+	/******************************************************************************
+	** GraphQueryPipeFilter
+	******************************************************************************/
+
     template<typename TGraph, typename TFuncNodes>
     class GraphQueryPipeFilter
         : public GraphQueryEngine<TGraph>::Pipe

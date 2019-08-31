@@ -12,6 +12,10 @@
 namespace graph
 {
 
+	/******************************************************************************
+	** GraphQueryPipeUnique
+	******************************************************************************/
+
     template<typename TGraph>
     class GraphQueryPipeUnique
         : public GraphQueryEngine<TGraph>::Pipe
@@ -56,8 +60,10 @@ namespace graph
             return gremlin;
         }
     };
-    
 
+	/******************************************************************************
+	** GraphQueryPipeLimit
+	******************************************************************************/
 
     template<typename TGraph>
     class GraphQueryPipeLimit

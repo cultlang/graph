@@ -14,10 +14,11 @@ namespace graph
     protected:
         virtual std::shared_ptr<GraphQueryEngine<TGraph>> & engine() = 0;
         
-        virtual TQueryFinal addPipe(std::unique_ptr<typename GraphQueryEngine<TGraph>::PipeDescription> && Pipe) = 0;
+        virtual TQueryFinal addPipe(std::unique_ptr<typename GraphQueryEngine<TGraph>::PipeDescription> && pipe) = 0;
+        virtual void appendPipes(std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> pipe_desc) = 0;
 
         virtual TQueryFinal newQueryPipeline() = 0;
-        virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> extractPipeline(TQueryFinal const& other) = 0;
+        virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> extractPipeline(TQueryFinal& other) = 0;
     };
 
     template<typename TGraph, template <typename, typename> typename TGraphQueryLibrary> 
@@ -40,18 +41,22 @@ namespace graph
         {
             return _engine;
         }
-        inline virtual GraphQuery addPipe(std::unique_ptr<typename GraphQueryEngine<TGraph>::PipeDescription> && Pipe) override
+        inline virtual GraphQuery addPipe(std::unique_ptr<typename GraphQueryEngine<TGraph>::PipeDescription> && pipe) override
         {
-            _pipeline->addPipe(std::move(Pipe));
+            _pipeline->addPipe(std::move(pipe));
 
             return std::move(*this);
+        }
+        inline virtual void appendPipes(std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> pipe_desc) override
+        {
+            _pipeline->appendPipes(pipe_desc);
         }
         
         inline virtual GraphQuery newQueryPipeline() override
         {
             return GraphQuery(_engine);
         }
-        inline virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> extractPipeline(GraphQuery const& query)
+        inline virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> extractPipeline(GraphQuery& query)
         {
             return query._pipeline;
         }
