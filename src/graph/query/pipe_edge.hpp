@@ -92,17 +92,32 @@ namespace graph
             
         }
 
-        inline bool _call_func_edges(TGraph::Node *n, TGraph::Edge* e)
+        inline bool _call_func_edges(typename TGraph::Node const* n, typename TGraph::Edge const* e)
         {
             if (!_modeFilterEdges(n, e))
                 return false;
 
-            if constexpr (std::is_invocable_v<TFuncEdges, TGraph::Edge*)>)
+            if constexpr (std::is_invocable_v<TFuncEdges, typename TGraph::Edge*>)
                 return _func_edges(e);
-            else if constexpr (std::is_invocable_v<TFuncNodes, TGraph::Node*, TGraph::Edge*>)
+            else if constexpr (std::is_invocable_v<TFuncEdges, typename TGraph::Node*, typename TGraph::Edge*>)
                 return _func_edges(n, e);
             else
                 static_assert(false, "TFuncNodes bad signature.");
+        }
+
+        inline bool _call_func_edgeNodes(typename TGraph::Node const* n, typename TGraph::Edge const* e, typename TGraph::Node const* en)
+        {
+            if (!_modeFilterEdgeNodes(n, e, en))
+                return false;
+
+            if constexpr (std::is_invocable_v<TFuncEdgeNodes, typename TGraph::Node*>)
+                return _func_edgeNodes(en);
+            else if constexpr (std::is_invocable_v<TFuncEdgeNodes,  typename TGraph::Edge*, typename TGraph::Node*>)
+                return _func_edgeNodes(e, en);
+            else if constexpr (std::is_invocable_v<TFuncEdgeNodes, typename TGraph::Node*, typename TGraph::Edge*, typename TGraph::Node*>)
+                return _func_edgeNodes(n, e, en);
+            else
+                static_assert(false, "TFuncEdgeNodes bad signature.");
         }
 
         inline virtual typename Query::PipeResult pipeFunc(
@@ -121,7 +136,7 @@ namespace graph
 
                 auto n = _gremlin->node();
                 _edges = collectEdges(*graph, n,
-                    [&](auto e) { return _modeFilterEdges(n, e) && _func_edges(n, e); });
+                    [&](auto e) { return _call_func_edges(n, e); });
                 _edges_it = _edges.begin();
                 _nodes_it = _nodes.end();
             }
@@ -137,7 +152,7 @@ namespace graph
                 auto n = _gremlin->node();
                 auto e = (typename TGraph::Edge const*) *(_edges_it ++);
                 _nodes = collectNodes(*graph, e, 
-                    [&](auto en) { return _modeFilterEdgeNodes(n, e, en) && _func_edgeNodes(n, e, en); });
+                    [&](auto en) { return _call_func_edgeNodes(n, e, en); });
                 _nodes_it = _nodes.begin();
             }
 

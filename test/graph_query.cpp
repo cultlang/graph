@@ -218,11 +218,11 @@ TEST_CASE( "graph::query() syntax traversal queries", "[graph::GraphQuery]" )
         REQUIRE(r_dad[0]->data == "odin"); // Thor's dad
     }
 
-    SECTION( ".in() can get nodes of incoming edges." )
+    SECTION( ".in() can get nodes of incoming edges (1 arg)." )
     {
         auto q = query(&g)
             .v(findNode(g, "thor"))
-            .in( [](auto n, auto e) { return e->data == "parents"; } );
+            .in( [](auto e) { return e->data == "parents"; } );
 
         CHECK(q->getPipeline()->countPipes() == 2);
         
@@ -231,11 +231,11 @@ TEST_CASE( "graph::query() syntax traversal queries", "[graph::GraphQuery]" )
         CHECK(r.size() == 3); // Thor has 3 children
     }
 
-    SECTION( ".out() can get nodes of outgoing edges." )
+    SECTION( ".out() can get nodes of outgoing edges (1 arg)." )
     {
         auto q = query(&g)
             .v(findNode(g, "thor"))
-            .out( [](auto n, auto e) { return e->data == "parents"; } );
+            .out( [](auto e) { return e->data == "parents"; } );
 
         CHECK(q->getPipeline()->countPipes() == 2);
         
