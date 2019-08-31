@@ -3,6 +3,7 @@
         "bazel-*": true
     },
     "files.associations": {
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "type_traits": "cpp"
     }
 }

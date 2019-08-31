@@ -69,6 +69,8 @@ namespace graph
             using MetaFlags = typename TFinal::MetaFlags;
             using CoreData = typename TFinal::CoreData;
 
+            using Core = typename TFinal::Core;
+
             using Label = typename TFinal::Label;
             using Node = typename TFinal::Node;
             using Edge = typename TFinal::Edge;
@@ -147,16 +149,26 @@ namespace graph
                 return addProp(Config::template typed_store<T>(data), Config::template typed_typeToValue<T>(), on_edge);
             }
 
-        // Getter functions
+        // Stat functions
         public:
             using Base::labelCount;
             using Base::nodeCount;
             using Base::edgeCount;
             using Base::propCount;
 
+        // Introspection functions
+        public:
+            using Base::isLabel;
+            using Base::isNode;
+            using Base::isEdge;
+            using Base::isProp;
+
+            using Base::isEdgeInverted;
+
+        // Getter functions
+        public:
             using Base::getNodeLabels;
             using Base::getEdgeNodes;
-            using Base::isEdgeInverted;
 
             TypeId getType(Core* core)
             {

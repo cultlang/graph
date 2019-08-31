@@ -53,7 +53,7 @@ namespace graph
             else if constexpr (std::is_invocable_v<TFuncNodes, decltype(gremlin->node()), decltype(gremlin)>)
                 filter_accepted = _func_nodes(gremlin->node(), gremlin);
             else
-                static_assert("TFuncNodes bad signature.");
+                static_assert(false, "TFuncNodes bad signature.");
 
             if (filter_accepted)
                 return gremlin;

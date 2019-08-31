@@ -69,43 +69,40 @@ namespace graph
         static inline bool _modeFilterEdges(typename TGraph::Node const* n, typename TGraph::Edge const* e)
         {
             if constexpr (EMode == GraphQueryPipeEdgesEnum::All)
-            {
                 return true;
-            }
             else if constexpr (EMode == GraphQueryPipeEdgesEnum::Incoming)
-            {
                 return edgeIsIncoming<TGraph>(n, e);
-            }
             else if constexpr (EMode == GraphQueryPipeEdgesEnum::Outgoing)
-            {
                 return edgeIsOutgoing<TGraph>(n, e);
-            }
             else
-            {
-                static_assert("Bad EMode");
-            }
+                static_assert(false, "Bad EMode");
             
         }
 
         static inline bool _modeFilterEdgeNodes(typename TGraph::Node const* n, typename TGraph::Edge const* e, typename TGraph::Node const* en)
         {
             if constexpr (EMode == GraphQueryPipeEdgesEnum::All)
-            {
                 return n != en;
-            }
             else if constexpr (EMode == GraphQueryPipeEdgesEnum::Incoming)
-            {
                 return !edgeIsIncoming<TGraph>(en, e);
-            }
             else if constexpr (EMode == GraphQueryPipeEdgesEnum::Outgoing)
-            {
                 return !edgeIsOutgoing<TGraph>(en, e);
-            }
             else
-            {
-                static_assert("Bad EMode");
-            }
+                static_assert(false, "Bad EMode");
             
+        }
+
+        inline bool _call_func_edges(TGraph::Node *n, TGraph::Edge* e)
+        {
+            if (!_modeFilterEdges(n, e))
+                return false;
+
+            if constexpr (std::is_invocable_v<TFuncEdges, TGraph::Edge*)>)
+                return _func_edges(e);
+            else if constexpr (std::is_invocable_v<TFuncNodes, TGraph::Node*, TGraph::Edge*>)
+                return _func_edges(n, e);
+            else
+                static_assert(false, "TFuncNodes bad signature.");
         }
 
         inline virtual typename Query::PipeResult pipeFunc(
