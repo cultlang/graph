@@ -78,7 +78,7 @@ namespace graph
             else if constexpr (EMode == GraphQueryPipeEdgesEnum::Outgoing)
                 return edgeIsOutgoing<TGraph>(n, e);
             else
-                static_assert(false, "Bad EMode");
+                static_assert(stdext::always_false, "Bad EMode");
             
         }
 
@@ -91,7 +91,7 @@ namespace graph
             else if constexpr (EMode == GraphQueryPipeEdgesEnum::Outgoing)
                 return !edgeIsOutgoing<TGraph>(en, e);
             else
-                static_assert(false, "Bad EMode");
+                static_assert(stdext::always_false, "Bad EMode");
             
         }
 
@@ -105,7 +105,7 @@ namespace graph
             else if constexpr (std::is_invocable_v<TFuncEdges, typename TGraph::Node*, typename TGraph::Edge*>)
                 return _func_edges(n, e);
             else
-                static_assert(false, "TFuncNodes bad signature.");
+                static_assert(stdext::always_false, "TFuncNodes bad signature.");
         }
 
         inline bool _call_func_edgeNodes(typename TGraph::Node const* n, typename TGraph::Edge const* e, typename TGraph::Node const* en)
@@ -120,7 +120,7 @@ namespace graph
             else if constexpr (std::is_invocable_v<TFuncEdgeNodes, typename TGraph::Node*, typename TGraph::Edge*, typename TGraph::Node*>)
                 return _func_edgeNodes(n, e, en);
             else
-                static_assert(false, "TFuncEdgeNodes bad signature.");
+                static_assert(stdext::always_false, "TFuncEdgeNodes bad signature.");
         }
 
         inline virtual typename Query::PipeResult pipeFunc(

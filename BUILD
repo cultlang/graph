@@ -19,7 +19,7 @@ cc_library(
         "//conditions:default": ["-std=c++17"],
     }),
     deps=[
-        "@cultlang_stdext//:stdext",
+        "@cultlang_stdext//:code",
         "@spdlog//:headers",
     ]
 )

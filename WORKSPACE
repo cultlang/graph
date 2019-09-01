@@ -9,7 +9,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "cultlang_stdext",
     remote = "https://github.com/cultlang/stdext",
-    tag = "v1.0.0"
+    commit = "22ea15ff2a05013d1e15717479b17329a48b385c"
 )
 
 ########################
