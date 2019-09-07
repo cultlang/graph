@@ -84,7 +84,7 @@ namespace graph
 
     public:
         inline GraphQueryPipeOptional(std::shared_ptr<PipeLineDescription> pipeline)
-            : Base(_pipeline)
+            : Base(pipeline)
         { }
 
         inline GraphQueryPipeOptional(GraphQueryPipeOptional const&) = default;
