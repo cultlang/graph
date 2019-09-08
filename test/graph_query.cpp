@@ -459,11 +459,16 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
     {
         auto q = query(&g)
             .v(findNode(g, "thor"))
-            /*.repeat_until(
+            .repeat_until(
                 [](auto _) { return _.out( [](auto n, auto e) { return e->data == "parents"; } ); },
-                [](auto n, auto r) { return g.hasEdge() })*/;
+                [&](auto n, auto r)
+                {
+                    bool found = false;
+                    g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
+                    return found;
+                });
 
-        CHECK(q->getPipeline()->countPipes() == 3); // copies the pipe expression
+        CHECK(q->getPipeline()->countPipes() == 2); // copies the pipe expression
 
         auto r = q.run();
 

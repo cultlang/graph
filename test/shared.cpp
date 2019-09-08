@@ -40,11 +40,12 @@ void test_help::fillStrGraphWithNorse(test_help::str_graph & g)
 
     auto bestla = g.addNode("bestla");
 
-    auto burr = g.addNode("burr");
-
     auto buri = g.addNode("buri");
     e = g.addEdge("creator", { buri, audumbla });
     g.addProp("licked-into-being", e);
+
+    auto burr = g.addNode("burr");
+    e = g.addEdge("parents", { burr, buri });
 
     e = g.addEdge("married", { burr, bestla });
 
