@@ -120,7 +120,7 @@ namespace graph
                 this->appendPipes(pipe_desc);
             }
 
-            return std::move(this);
+            return std::move(*(TQueryFinal*)this);
         }
 
         template<typename TFuncSubQuery, typename TFuncUntil>

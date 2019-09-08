@@ -176,7 +176,7 @@ namespace graph
 
     public:
         inline GraphQueryPipeRepeatUntil(std::shared_ptr<PipeLineDescription> pipeline, TFuncUntil const& func_until)
-            : Base(_pipeline)
+            : Base(pipeline)
             , _func_until(func_until)
         { }
 
@@ -200,7 +200,46 @@ namespace graph
             std::shared_ptr<typename Query::Gremlin> const& gremlin
         ) override
         {
-            throw stdext::exception("Not implemented.");
+            auto vertex_state = (GraphQueryPipeVertex<TGraph>*)_state.get(0);
+            auto empty = vertex_state->getNodes().size() == 0;
+
+            if (!gremlin && empty)
+                return Query::PipeResultEnum::Pull;
+
+            // we have a gremlin to begin the query with
+            if (empty)
+            {
+                _gremlin = gremlin;
+
+                // TODO use gremlin source to inject gremlins
+                vertex_state->setNode(gremlin->node());
+            }
+
+            auto subquery_result = _state.next(graph);
+            typename Query::PipeResult result;
+
+            if (_state.done()) // subquery_result == null
+            {
+                if (gremlin)
+                // There was no result on the pipeline
+                // return the gremlin
+                {
+                    result = gremlin;
+                }
+                else
+                {
+                    result = Query::PipeResultEnum::Pull;
+                }
+
+                _gremlin = nullptr;
+                vertex_state->clear();
+            }
+            else
+            {
+                result = GraphQueryEngine<TGraph>::gotoVertex(_gremlin, subquery_result->node());
+            }
+            
+            return result;
         }
     };
 }

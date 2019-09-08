@@ -72,7 +72,7 @@ void test_help::fillStrGraphWithNorse(test_help::str_graph & g)
     e = g.addEdge("parents", { odin, bestla, burr });
 
     auto jord = g.addNode("jord");
-    e = g.addEdge("parents", { jord, bestla, annar, nott });
+    e = g.addEdge("parents", { jord, annar, nott });
 
     auto frigg = g.addNode("frigg");
     e = g.addEdge("parents", { frigg, fjorgynn_wife, fjorgynn });

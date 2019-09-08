@@ -262,7 +262,7 @@ TEST_CASE( "graph::query() syntax traversal queries", "[graph::GraphQuery]" )
     {
         auto q = query(&g)
             .v(std::vector { findNode(g, "thor"), findNode(g, "odin"), findNode(g, "odr") })
-            .filter( [](auto n, auto g) { return g->node()->data[0] != 'o'; } );
+            .filter( [](auto n, auto r) { return r->node()->data[0] != 'o'; } );
 
         CHECK(q->getPipeline()->countPipes() == 2);
         
@@ -440,5 +440,33 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
         auto r = q.run();
 
         REQUIRE(r.size() == 2);  // thor has 2 parents
+    }
+
+    SECTION( ".repeat_times() will repeat a subquery a given number of times" )
+    {
+        auto q = query(&g)
+            .v(findNode(g, "thor"))
+            .repeat_times([](auto _) { return _.out( [](auto n, auto e) { return e->data == "parents"; } ); }, 2);
+
+        CHECK(q->getPipeline()->countPipes() == 3); // copies the pipe expression
+
+        auto r = q.run();
+
+        REQUIRE(r.size() == 4);  // thor has 4 grand-parents
+    }
+
+    SECTION( ".repeat_until() will repeat a subquery until a condition is met" )
+    {
+        auto q = query(&g)
+            .v(findNode(g, "thor"))
+            /*.repeat_until(
+                [](auto _) { return _.out( [](auto n, auto e) { return e->data == "parents"; } ); },
+                [](auto n, auto r) { return g.hasEdge() })*/;
+
+        CHECK(q->getPipeline()->countPipes() == 3); // copies the pipe expression
+
+        auto r = q.run();
+
+        REQUIRE(r.size() == 4);  // thor has 4 grand-parents
     }
 }

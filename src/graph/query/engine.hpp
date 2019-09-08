@@ -155,13 +155,17 @@ namespace graph
                     throw graph_error("PipeLineDescription is in use, clone or wait for queries to finish.");
 
                 if (!description->_inUse.compare_exchange_strong(expected_that, -1))
+                {
+                    _inUse = 0;
                     throw graph_error("PipeLineDescription (that) is in use, clone or wait for queries to finish.");
+                }
 
                 for (auto it : description->_pipes)
                 {
                     _pipes.push_back(it);
                 }
 
+                description->_inUse = 0;
                 _inUse = 0;
             }
 

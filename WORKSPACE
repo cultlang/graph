@@ -9,7 +9,8 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "cultlang_stdext",
     remote = "https://github.com/cultlang/stdext",
-    commit = "22ea15ff2a05013d1e15717479b17329a48b385c"
+    commit = "22ea15ff2a05013d1e15717479b17329a48b385c",
+    shallow_since = "1567379420 -0700"
 )
 
 ########################
@@ -17,7 +18,8 @@ git_repository(
 git_repository(
     name = "catch",
     remote = "https://github.com/cgrinker/Catch2",
-    commit = "5e6488fd9949cb41d717a72c8c4603b7e37d68cd"
+    commit = "5e6488fd9949cb41d717a72c8c4603b7e37d68cd",
+    shallow_since = "1560275997 -0700"
 )
 
 ########################
