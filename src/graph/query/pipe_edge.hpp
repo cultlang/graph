@@ -100,9 +100,9 @@ namespace graph
             if (!_modeFilterEdges(n, e))
                 return false;
 
-            if constexpr (std::is_invocable_v<TFuncEdges, typename TGraph::Edge*>)
+            if constexpr (std::is_invocable_v<TFuncEdges, decltype(e)>)
                 return _func_edges(e);
-            else if constexpr (std::is_invocable_v<TFuncEdges, typename TGraph::Node*, typename TGraph::Edge*>)
+            else if constexpr (std::is_invocable_v<TFuncEdges, decltype(n), decltype(e)>)
                 return _func_edges(n, e);
             else
                 static_assert(stdext::always_false, "TFuncNodes bad signature.");
@@ -113,11 +113,11 @@ namespace graph
             if (!_modeFilterEdgeNodes(n, e, en))
                 return false;
 
-            if constexpr (std::is_invocable_v<TFuncEdgeNodes, typename TGraph::Node*>)
+            if constexpr (std::is_invocable_v<TFuncEdgeNodes, decltype(en)>)
                 return _func_edgeNodes(en);
-            else if constexpr (std::is_invocable_v<TFuncEdgeNodes,  typename TGraph::Edge*, typename TGraph::Node*>)
+            else if constexpr (std::is_invocable_v<TFuncEdgeNodes,  decltype(e), decltype(en)>)
                 return _func_edgeNodes(e, en);
-            else if constexpr (std::is_invocable_v<TFuncEdgeNodes, typename TGraph::Node*, typename TGraph::Edge*, typename TGraph::Node*>)
+            else if constexpr (std::is_invocable_v<TFuncEdgeNodes, decltype(n), decltype(e), decltype(en)>)
                 return _func_edgeNodes(n, e, en);
             else
                 static_assert(stdext::always_false, "TFuncEdgeNodes bad signature.");

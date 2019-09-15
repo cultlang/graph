@@ -5,6 +5,8 @@
 #pragma once
 
 #include <stdexcept>
+#include "stdext/exception.h"
+#include "stdext/introspection.hpp"
 
 namespace graph
 {

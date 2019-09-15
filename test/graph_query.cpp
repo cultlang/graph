@@ -9,6 +9,7 @@
 #include "graph/graph.hpp"
 
 #include <string>
+#include <iostream>
 
 using namespace graph;
 using namespace Catch::Matchers;
@@ -442,28 +443,28 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
         REQUIRE(r.size() == 2);  // thor has 2 parents
     }
 
-    SECTION( ".repeat_times() will repeat a subquery a given number of times" )
+    SECTION( ".repeat_breadth() will repeat a subquery until a condition is met, breadth first (contrived - success)" )
     {
+        int visit_count = 0;
         auto q = query(&g)
             .v(findNode(g, "thor"))
-            .repeat_times([](auto _) { return _.out( [](auto n, auto e) { return e->data == "parents"; } ); }, 2);
-
-        CHECK(q->getPipeline()->countPipes() == 3); // copies the pipe expression
-
-        auto r = q.run();
-
-        REQUIRE(r.size() == 4);  // thor has 4 grand-parents
-    }
-
-    SECTION( ".repeat_until() will repeat a subquery until a condition is met" )
-    {
-        auto q = query(&g)
-            .v(findNode(g, "thor"))
-            .repeat_until(
-                [](auto _) { return _.out( [](auto n, auto e) { return e->data == "parents"; } ); },
+            .repeat_breadth(
+                [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
+                [&]() { visit_count++; return true; },
                 [&](auto n, auto r)
                 {
+                    // TODO simplify this
                     bool found = false;
+                    g.forAllEdgesOnNode(n, [&](auto e)
+                    {
+                        if (e->data != "creator") return true;
+                        g.forAllPropsOnEdge(e, [&](auto p)
+                        {
+                            found = p->data == "licked-into-being";
+                            return !found;
+                        });
+                        return !found;
+                    });
                     g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
                     return found;
                 });
@@ -472,6 +473,113 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
 
         auto r = q.run();
 
-        REQUIRE(r.size() == 4);  // thor has 4 grand-parents
+        CHECK(visit_count == 7); // breadth first visted more people
+
+        REQUIRE(r.size() == 1);  // thor is related to someone licked into being
+        CHECK(r[0]->data == "buri"); // that wierdo is buri
+    }
+
+    SECTION( ".repeat_breadth() will repeat a subquery until a condition is met, breadth first (contrived - failure)" )
+    {
+        int visit_count = 0;
+        auto q = query(&g)
+            .v(findNode(g, "frigg"))
+            .repeat_breadth(
+                [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
+                [&]() {  visit_count++; return true; },
+                [&](auto n, auto r)
+                {
+                    // TODO simplify this
+                    bool found = false;
+                    g.forAllEdgesOnNode(n, [&](auto e)
+                    {
+                        if (e->data != "creator") return true;
+                        g.forAllPropsOnEdge(e, [&](auto p)
+                        {
+                            found = p->data == "licked-into-being";
+                            return !found;
+                        });
+                        return !found;
+                    });
+                    g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
+                    return found;
+                });
+
+        CHECK(q->getPipeline()->countPipes() == 2); // copies the pipe expression
+
+        auto r = q.run();
+
+        CHECK(visit_count == 2); // breadth first visted everyone
+        REQUIRE(r.size() == 0);  // frigg is not related to someone licked into being
+    }
+
+    SECTION( ".repeat_depth() will repeat a subquery until a condition is met, depth first (contrived - success)" )
+    {
+        int visit_count = 0;
+        auto q = query(&g)
+            .v(findNode(g, "thor"))
+            .repeat_breadth(
+                [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
+                [&]() { visit_count++; return true; },
+                [&](auto n, auto r)
+                {
+                    // TODO simplify this
+                    bool found = false;
+                    g.forAllEdgesOnNode(n, [&](auto e)
+                    {
+                        if (e->data != "creator") return true;
+                        g.forAllPropsOnEdge(e, [&](auto p)
+                        {
+                            found = p->data == "licked-into-being";
+                            return !found;
+                        });
+                        return !found;
+                    });
+                    g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
+                    return found;
+                });
+
+        CHECK(q->getPipeline()->countPipes() == 2); // copies the pipe expression
+
+        auto r = q.run();
+
+        CHECK(visit_count == 7); // depth first visted less people
+
+        REQUIRE(r.size() == 1);  // thor is related to someone licked into being
+        CHECK(r[0]->data == "buri"); // that wierdo is buri
+    }
+
+    SECTION( ".repeat_depth() will repeat a subquery until a condition is met, depth first (contrived - failure)" )
+    {
+        int visit_count = 0;
+        auto q = query(&g)
+            .v(findNode(g, "frigg"))
+            .repeat_depth(
+                [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
+                [&]() {  visit_count++; return true; },
+                [&](auto n, auto r)
+                {
+                    // TODO simplify this
+                    bool found = false;
+                    g.forAllEdgesOnNode(n, [&](auto e)
+                    {
+                        if (e->data != "creator") return true;
+                        g.forAllPropsOnEdge(e, [&](auto p)
+                        {
+                            found = p->data == "licked-into-being";
+                            return !found;
+                        });
+                        return !found;
+                    });
+                    g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
+                    return found;
+                });
+
+        CHECK(q->getPipeline()->countPipes() == 2); // copies the pipe expression
+
+        auto r = q.run();
+
+        CHECK(visit_count == 2); // depth first visted everyone
+        REQUIRE(r.size() == 0);  // frigg is not related to someone licked into being
     }
 }

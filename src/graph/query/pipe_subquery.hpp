@@ -6,6 +6,8 @@
 
 #include <memory>
 #include <type_traits>
+#include <queue>
+#include <stack>
 
 #include "engine.hpp"
 #include "pipe_vertex.hpp"
@@ -32,8 +34,6 @@ namespace graph
 
     // state
     protected:
-        PipeLineState _state;
-        std::shared_ptr<typename Query::Gremlin> _gremlin;
 
     private:
         inline static std::shared_ptr<PipeLineDescription> _fixupPipeline(std::shared_ptr<PipeLineDescription> pipeline)
@@ -45,7 +45,6 @@ namespace graph
     public:
         inline GraphQuerySubQueryBase(std::shared_ptr<PipeLineDescription> pipeline)
             : _pipeline(_fixupPipeline(pipeline))
-            , _state(_pipeline)
         { }
 
         inline GraphQuerySubQueryBase(GraphQuerySubQueryBase const&) = default;
@@ -79,12 +78,16 @@ namespace graph
 
     // state
     protected:
+        PipeLineState _state;
+        std::shared_ptr<typename Query::Gremlin> _gremlin;
 
     private:
 
     public:
         inline GraphQueryPipeOptional(std::shared_ptr<PipeLineDescription> pipeline)
             : Base(pipeline)
+            , _state(_pipeline)
+            , _gremlin()
         { }
 
         inline GraphQueryPipeOptional(GraphQueryPipeOptional const&) = default;
@@ -102,13 +105,25 @@ namespace graph
             return res;
         };
 
+        inline GraphQueryPipeVertex<TGraph>* _getCurrentStateVertexPipe()
+        {
+            return (GraphQueryPipeVertex<TGraph>*)_state.get(0);
+        }
+
+        inline void _doSetupState()
+        {
+            if (_state.done())
+                _state.reset();
+            // TODO use gremlin source to inject gremlins
+            _getCurrentStateVertexPipe()->setNode(_gremlin->node());
+        }
+
         inline virtual typename Query::PipeResult pipeFunc(
             TGraph const* graph,
             std::shared_ptr<typename Query::Gremlin> const& gremlin
         ) override
         {
-            auto vertex_state = (GraphQueryPipeVertex<TGraph>*)_state.get(0);
-            auto empty = vertex_state->getNodes().size() == 0;
+            auto empty = _getCurrentStateVertexPipe()->getNodes().size() == 0;
 
             if (!gremlin && empty)
                 return Query::PipeResultEnum::Pull;
@@ -117,9 +132,7 @@ namespace graph
             if (empty)
             {
                 _gremlin = gremlin;
-
-                // TODO use gremlin source to inject gremlins
-                vertex_state->setNode(gremlin->node());
+                _doSetupState();
             }
 
             auto subquery_result = _state.next(graph);
@@ -128,8 +141,8 @@ namespace graph
             if (_state.done()) // subquery_result == null
             {
                 if (gremlin)
-                // There was no result on the pipeline
-                // return the gremlin
+                // There was no result on the pipeline, return the gremlin if possible
+                // This uses the fact that a failed query will happen immedietly to implement optional behaviour
                 {
                     result = gremlin;
                 }
@@ -139,7 +152,7 @@ namespace graph
                 }
 
                 _gremlin = nullptr;
-                vertex_state->clear();
+                _getCurrentStateVertexPipe()->clear();
             }
             else
             {
@@ -151,11 +164,11 @@ namespace graph
     };
 
 	/******************************************************************************
-	** GraphQueryPipeRepeatUntil
+	** GraphQueryPipeRepeatBreadthFirst
 	******************************************************************************/
 
-    template<typename TGraph, typename TFuncUntil>
-    class GraphQueryPipeRepeatUntil
+    template<typename TGraph, typename TFuncRepeatFilter, typename TFuncEmitFilter = void*>
+    class GraphQueryPipeRepeatBreadthFirst
         : public GraphQuerySubQueryBase<TGraph>
     {
     private:
@@ -167,41 +180,90 @@ namespace graph
 
     // config
     protected:
-        TFuncUntil _func_until;
+        TFuncRepeatFilter _func_repeat;
+        TFuncEmitFilter _func_emit;
 
     // state
     protected:
+        PipeLineState _state;
+        std::queue<std::shared_ptr<typename Query::Gremlin>> _gremlins;
+        
 
     private:
 
     public:
-        inline GraphQueryPipeRepeatUntil(std::shared_ptr<PipeLineDescription> pipeline, TFuncUntil const& func_until)
+        inline GraphQueryPipeRepeatBreadthFirst(std::shared_ptr<PipeLineDescription> pipeline, TFuncRepeatFilter const& func_repeat)
             : Base(pipeline)
-            , _func_until(func_until)
+            , _func_repeat(func_repeat)
+            , _func_emit(nullptr)
+            , _state(_pipeline)
+            , _gremlins()
         { }
 
-        inline GraphQueryPipeRepeatUntil(GraphQueryPipeRepeatUntil const&) = default;
-        inline GraphQueryPipeRepeatUntil(GraphQueryPipeRepeatUntil &&) = default;
+        inline GraphQueryPipeRepeatBreadthFirst(std::shared_ptr<PipeLineDescription> pipeline, TFuncRepeatFilter const& func_repeat, TFuncEmitFilter const& func_emit)
+            : Base(pipeline)
+            , _func_repeat(func_repeat)
+            , _func_emit(func_emit)
+            , _state(_pipeline)
+            , _gremlins()
+        { }
 
-        inline ~GraphQueryPipeRepeatUntil() = default;
+        inline GraphQueryPipeRepeatBreadthFirst(GraphQueryPipeRepeatBreadthFirst const&) = default;
+        inline GraphQueryPipeRepeatBreadthFirst(GraphQueryPipeRepeatBreadthFirst &&) = default;
+
+        inline ~GraphQueryPipeRepeatBreadthFirst() = default;
 
     protected:
 
         inline virtual typename Query::PipeState* init() const override
         {
-            auto res = new GraphQueryPipeRepeatUntil(*this);
+            auto res = new GraphQueryPipeRepeatBreadthFirst(*this);
             res->_state.init();
 
             return res;
         };
+
+        inline bool _call_func_repeat(typename TGraph::Node const* n, std::shared_ptr<typename Query::Gremlin> const& r)
+        {
+            if constexpr (std::is_invocable_v<TFuncRepeatFilter>)
+                return _func_repeat();
+            else if constexpr (std::is_invocable_v<TFuncRepeatFilter, decltype(n)>)
+                return _func_repeat(n);
+            else if constexpr (std::is_invocable_v<TFuncRepeatFilter, decltype(n), decltype(r)>)
+                return _func_repeat(n, r);
+            else
+                static_assert(stdext::always_false<>, "TFuncRepeatFilter bad signature.");
+        }
+
+        inline bool _call_func_emit(typename TGraph::Node const* n, std::shared_ptr<typename Query::Gremlin> const& r)
+        {
+            if constexpr (std::is_invocable_v<TFuncEmitFilter, decltype(n)>)
+                return _func_emit(n);
+            else if constexpr (std::is_invocable_v<TFuncEmitFilter, decltype(n), decltype(r)>)
+                return _func_emit(n, r);
+            else
+                static_assert(stdext::always_false<>, "TFuncEmitFilter bad signature.");
+        }
+
+        inline GraphQueryPipeVertex<TGraph>* _getCurrentStateVertexPipe()
+        {
+            return (GraphQueryPipeVertex<TGraph>*)_state.get(0);
+        }
+
+        inline void _doSetupState()
+        {
+            if (_state.done())
+                _state.reset();
+            // TODO use gremlin source to inject gremlins
+            _getCurrentStateVertexPipe()->setNode(_gremlins.front()->node());
+        }
 
         inline virtual typename Query::PipeResult pipeFunc(
             TGraph const* graph,
             std::shared_ptr<typename Query::Gremlin> const& gremlin
         ) override
         {
-            auto vertex_state = (GraphQueryPipeVertex<TGraph>*)_state.get(0);
-            auto empty = vertex_state->getNodes().size() == 0;
+            auto empty = _getCurrentStateVertexPipe()->getNodes().size() == 0 && _gremlins.empty();
 
             if (!gremlin && empty)
                 return Query::PipeResultEnum::Pull;
@@ -209,37 +271,47 @@ namespace graph
             // we have a gremlin to begin the query with
             if (empty)
             {
-                _gremlin = gremlin;
-
-                // TODO use gremlin source to inject gremlins
-                vertex_state->setNode(gremlin->node());
+                _gremlins.push(gremlin);
+                _doSetupState();
             }
 
-            auto subquery_result = _state.next(graph);
-            typename Query::PipeResult result;
-
-            if (_state.done()) // subquery_result == null
+            bool emit = false;
+            std::shared_ptr<typename Query::Gremlin> subquery_result;
+            do
             {
-                if (gremlin)
-                // There was no result on the pipeline
-                // return the gremlin
+                subquery_result = _state.next(graph);
+                
+                if (_state.done()) // subquery_result == null
                 {
-                    result = gremlin;
-                }
-                else
-                {
-                    result = Query::PipeResultEnum::Pull;
+                    _gremlins.pop();
+                    _getCurrentStateVertexPipe()->clear();
+
+                    // reset
+                    if (_gremlins.empty())
+                    {
+                        // this will run the empty branch above eventually
+                        return Query::PipeResultEnum::Pull;
+                    }
+                    else
+                    {
+                        _doSetupState();
+                        continue;
+                    }
                 }
 
-                _gremlin = nullptr;
-                vertex_state->clear();
-            }
-            else
-            {
-                result = GraphQueryEngine<TGraph>::gotoVertex(_gremlin, subquery_result->node());
-            }
-            
-            return result;
+                bool repeat = emit = _call_func_repeat(subquery_result->node(), subquery_result);
+                if constexpr (!std::is_same_v<TFuncEmitFilter, void*>)
+                {
+                    emit = _call_func_emit(subquery_result->node(), subquery_result);
+                }
+
+                if (repeat)
+                {
+                    _gremlins.push(subquery_result);
+                }
+            } while (!emit);
+
+            return GraphQueryEngine<TGraph>::gotoVertex(_gremlins.front(), subquery_result->node());
         }
     };
 }

@@ -111,22 +111,28 @@ namespace graph
             return this->addPipe(std::make_unique<GraphQueryPipeOptional<TGraph>>(this->extractPipeline(sub_query(this->newQueryPipeline()))));
         }
 
-        template<typename TFuncSubQuery>
-        TQueryFinal repeat_times(TFuncSubQuery sub_query, size_t times)
+        template<typename TFuncSubQuery, typename TFuncRepeatFilter>
+        TQueryFinal repeat_breadth(TFuncSubQuery sub_query, TFuncRepeatFilter repeat)
         {
-            auto pipe_desc = this->extractPipeline(sub_query(this->newQueryPipeline()));
-            for (int i = 0; i < times; ++i)
-            {
-                this->appendPipes(pipe_desc);
-            }
-
-            return std::move(*(TQueryFinal*)this);
+            return this->addPipe(std::make_unique<GraphQueryPipeRepeatBreadthFirst<TGraph, TFuncRepeatFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat));
         }
 
-        template<typename TFuncSubQuery, typename TFuncUntil>
-        TQueryFinal repeat_until(TFuncSubQuery sub_query, TFuncUntil until)
+        template<typename TFuncSubQuery, typename TFuncRepeatFilter, typename TFuncEmitFilter>
+        TQueryFinal repeat_breadth(TFuncSubQuery sub_query, TFuncRepeatFilter repeat, TFuncEmitFilter emit)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeRepeatUntil<TGraph, TFuncUntil>>(this->extractPipeline(sub_query(this->newQueryPipeline())), until));
+            return this->addPipe(std::make_unique<GraphQueryPipeRepeatBreadthFirst<TGraph, TFuncRepeatFilter, TFuncEmitFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat, emit));
+        }
+
+        template<typename TFuncSubQuery, typename TFuncRepeatFilter>
+        TQueryFinal repeat_depth(TFuncSubQuery sub_query, TFuncRepeatFilter repeat)
+        {
+            return this->addPipe(std::make_unique<GraphQueryPipeRepeatBreadthFirst<TGraph, TFuncRepeatFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat));
+        }
+
+        template<typename TFuncSubQuery, typename TFuncRepeatFilter, typename TFuncEmitFilter>
+        TQueryFinal repeat_depth(TFuncSubQuery sub_query, TFuncRepeatFilter repeat, TFuncEmitFilter emit)
+        {
+            return this->addPipe(std::make_unique<GraphQueryPipeRepeatBreadthFirst<TGraph, TFuncRepeatFilter, TFuncEmitFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat, emit));
         }
     };
 }

@@ -13,7 +13,7 @@
                 "${workspaceFolder}/bazel-graph/external/replxx/include",
                 "${workspaceFolder}/bazel-graph/external/pegtl/include",
 
-                "${workspaceFolder}/bazel-graph/external/stdext/src"
+                "${workspaceFolder}/bazel-graph/external/cultlang_stdext/src"
             ],
             "defines": [
                 "_DEBUG",
