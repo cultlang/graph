@@ -19,7 +19,7 @@ cc_library(
         "//conditions:default": ["-std=c++17"],
     }),
     deps=[
-        "@cultlang_stdext//:code",
+        "@cultlang_stdext//:headers",
         "@spdlog//:headers",
     ]
 )
@@ -38,6 +38,7 @@ cc_test(
     }),
     deps = [
         ":graph",
+        "@cultlang_stdext//:code",
         "@catch//:single_include",
     ],
 )
@@ -54,6 +55,7 @@ cc_binary(
     }),
     deps = [
         ":graph",
+        "@cultlang_stdext//:code",
         "@replxx//:replxx",
         "@catch//:single_include",
         "@pegtl//:pegtl"
