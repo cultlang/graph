@@ -314,4 +314,170 @@ namespace graph
             return GraphQueryEngine<TGraph>::gotoVertex(_gremlins.front(), subquery_result->node());
         }
     };
+
+	/******************************************************************************
+	** GraphQueryPipeRepeatDepthFirst
+	******************************************************************************/
+
+    template<typename TGraph, typename TFuncRepeatFilter, typename TFuncEmitFilter = void*>
+    class GraphQueryPipeRepeatDepthFirst
+        : public GraphQuerySubQueryBase<TGraph>
+    {
+    private:
+        using Query = GraphQueryEngine<TGraph>;
+        using PipeLineDescription = typename Query::PipeLineDescription;
+        using PipeLineState = typename Query::PipeLineState;
+
+        using Base = GraphQuerySubQueryBase<TGraph>;
+
+    // config
+    protected:
+        TFuncRepeatFilter _func_repeat;
+        TFuncEmitFilter _func_emit;
+
+    // state
+    protected:
+        struct _DepthStackState
+        {
+            PipeLineState* state;
+            std::shared_ptr<typename Query::Gremlin> gremlin;
+
+            inline GraphQueryPipeVertex<TGraph>* _getStateVertexPipe()
+            {
+                return (GraphQueryPipeVertex<TGraph>*)state->get(0);
+            }
+
+            inline _DepthStackState(GraphQueryPipeRepeatDepthFirst* this_, std::shared_ptr<typename Query::Gremlin> gremlin)
+                : state(new PipeLineState(this_->_pipeline))
+                , gremlin(gremlin)
+            {
+                state->init();
+                _getStateVertexPipe()->setNode(gremlin->node());
+            }
+
+            inline ~_DepthStackState()
+            {
+                delete state;
+            }
+        };
+
+        std::stack<_DepthStackState> _state;
+        
+
+    private:
+
+    public:
+        inline GraphQueryPipeRepeatDepthFirst(std::shared_ptr<PipeLineDescription> pipeline, TFuncRepeatFilter const& func_repeat)
+            : Base(pipeline)
+            , _func_repeat(func_repeat)
+            , _func_emit(nullptr)
+            , _state()
+        { }
+
+        inline GraphQueryPipeRepeatDepthFirst(std::shared_ptr<PipeLineDescription> pipeline, TFuncRepeatFilter const& func_repeat, TFuncEmitFilter const& func_emit)
+            : Base(pipeline)
+            , _func_repeat(func_repeat)
+            , _func_emit(func_emit)
+            , _state()
+        { }
+
+        inline GraphQueryPipeRepeatDepthFirst(GraphQueryPipeRepeatDepthFirst const&) = default;
+        inline GraphQueryPipeRepeatDepthFirst(GraphQueryPipeRepeatDepthFirst &&) = default;
+
+        inline ~GraphQueryPipeRepeatDepthFirst() = default;
+
+    protected:
+
+        inline virtual typename Query::PipeState* init() const override
+        {
+            auto res = new GraphQueryPipeRepeatDepthFirst(*this);
+
+            return res;
+        };
+
+        inline bool _call_func_repeat(typename TGraph::Node const* n, std::shared_ptr<typename Query::Gremlin> const& r)
+        {
+            if constexpr (std::is_invocable_v<TFuncRepeatFilter>)
+                return _func_repeat();
+            else if constexpr (std::is_invocable_v<TFuncRepeatFilter, decltype(n)>)
+                return _func_repeat(n);
+            else if constexpr (std::is_invocable_v<TFuncRepeatFilter, decltype(n), decltype(r)>)
+                return _func_repeat(n, r);
+            else
+                static_assert(stdext::always_false<>, "TFuncRepeatFilter bad signature.");
+        }
+
+        inline bool _call_func_emit(typename TGraph::Node const* n, std::shared_ptr<typename Query::Gremlin> const& r)
+        {
+            if constexpr (std::is_invocable_v<TFuncEmitFilter, decltype(n)>)
+                return _func_emit(n);
+            else if constexpr (std::is_invocable_v<TFuncEmitFilter, decltype(n), decltype(r)>)
+                return _func_emit(n, r);
+            else
+                static_assert(stdext::always_false<>, "TFuncEmitFilter bad signature.");
+        }
+
+        inline void _doPushState(std::shared_ptr<typename Query::Gremlin> const& gremlin)
+        {
+            _state.emplace(this, gremlin);
+        }
+
+        inline virtual typename Query::PipeResult pipeFunc(
+            TGraph const* graph,
+            std::shared_ptr<typename Query::Gremlin> const& gremlin
+        ) override
+        {
+            auto empty = _state.empty();
+
+            if (!gremlin && empty)
+                return Query::PipeResultEnum::Pull;
+
+            // we have a gremlin to begin the query with
+            if (empty)
+            {
+                _doPushState(gremlin);
+            }
+
+            bool emit = false;
+            std::shared_ptr<typename Query::Gremlin> subquery_result;
+            do
+            {
+                subquery_result = _state.top().state->next(graph);
+                
+                if (_state.top().state->done()) // subquery_result == null
+                {
+                    _state.pop();
+
+                    // reset
+                    if (_state.empty())
+                    {
+                        // this will run the empty branch above eventually
+                        return Query::PipeResultEnum::Pull;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+
+                bool repeat = emit = _call_func_repeat(subquery_result->node(), subquery_result);
+                if constexpr (!std::is_same_v<TFuncEmitFilter, void*>)
+                {
+                    emit = _call_func_emit(subquery_result->node(), subquery_result);
+                }
+
+                if (emit)
+                {
+                    subquery_result = GraphQueryEngine<TGraph>::gotoVertex(_state.top().gremlin, subquery_result->node());;
+                }
+
+                if (repeat)
+                {
+                    _doPushState(subquery_result);
+                }
+            } while (!emit);
+
+            return subquery_result;
+        }
+    };
 }

@@ -126,13 +126,13 @@ namespace graph
         template<typename TFuncSubQuery, typename TFuncRepeatFilter>
         TQueryFinal repeat_depth(TFuncSubQuery sub_query, TFuncRepeatFilter repeat)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeRepeatBreadthFirst<TGraph, TFuncRepeatFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat));
+            return this->addPipe(std::make_unique<GraphQueryPipeRepeatDepthFirst<TGraph, TFuncRepeatFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat));
         }
 
         template<typename TFuncSubQuery, typename TFuncRepeatFilter, typename TFuncEmitFilter>
         TQueryFinal repeat_depth(TFuncSubQuery sub_query, TFuncRepeatFilter repeat, TFuncEmitFilter emit)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeRepeatBreadthFirst<TGraph, TFuncRepeatFilter, TFuncEmitFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat, emit));
+            return this->addPipe(std::make_unique<GraphQueryPipeRepeatDepthFirst<TGraph, TFuncRepeatFilter, TFuncEmitFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat, emit));
         }
     };
 }

@@ -445,12 +445,12 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
 
     SECTION( ".repeat_breadth() will repeat a subquery until a condition is met, breadth first (contrived - success)" )
     {
-        int visit_count = 0;
+        std::vector<std::string> visits;
         auto q = query(&g)
             .v(findNode(g, "thor"))
             .repeat_breadth(
                 [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
-                [&]() { visit_count++; return true; },
+                [&](auto n) { visits.push_back(n->data); return true; },
                 [&](auto n, auto r)
                 {
                     // TODO simplify this
@@ -473,7 +473,8 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
 
         auto r = q.run();
 
-        CHECK(visit_count == 7); // breadth first visted more people
+        REQUIRE(visits.size() == 7);
+        CHECK( (visits[1] == "odin" || visits[1] == "jord") ); // in breadth the second visit will be another direct parent
 
         REQUIRE(r.size() == 1);  // thor is related to someone licked into being
         CHECK(r[0]->data == "buri"); // that wierdo is buri
@@ -481,12 +482,12 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
 
     SECTION( ".repeat_breadth() will repeat a subquery until a condition is met, breadth first (contrived - failure)" )
     {
-        int visit_count = 0;
+        std::vector<std::string> visits;
         auto q = query(&g)
             .v(findNode(g, "frigg"))
             .repeat_breadth(
                 [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
-                [&]() {  visit_count++; return true; },
+                [&](auto n) { visits.push_back(n->data); return true; },
                 [&](auto n, auto r)
                 {
                     // TODO simplify this
@@ -509,18 +510,18 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
 
         auto r = q.run();
 
-        CHECK(visit_count == 2); // breadth first visted everyone
+        CHECK(visits.size() == 2);
         REQUIRE(r.size() == 0);  // frigg is not related to someone licked into being
     }
 
     SECTION( ".repeat_depth() will repeat a subquery until a condition is met, depth first (contrived - success)" )
     {
-        int visit_count = 0;
+        std::vector<std::string> visits;
         auto q = query(&g)
             .v(findNode(g, "thor"))
-            .repeat_breadth(
+            .repeat_depth(
                 [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
-                [&]() { visit_count++; return true; },
+                [&](auto n) { visits.push_back(n->data); return true; },
                 [&](auto n, auto r)
                 {
                     // TODO simplify this
@@ -543,7 +544,8 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
 
         auto r = q.run();
 
-        CHECK(visit_count == 7); // depth first visted less people
+        REQUIRE(visits.size() == 7);
+        CHECK( (visits[1] != "odin" && visits[1] != "jord") ); // in depth the second visit will not be another direct parent
 
         REQUIRE(r.size() == 1);  // thor is related to someone licked into being
         CHECK(r[0]->data == "buri"); // that wierdo is buri
@@ -551,12 +553,12 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
 
     SECTION( ".repeat_depth() will repeat a subquery until a condition is met, depth first (contrived - failure)" )
     {
-        int visit_count = 0;
+        std::vector<std::string> visits;
         auto q = query(&g)
             .v(findNode(g, "frigg"))
             .repeat_depth(
                 [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
-                [&]() {  visit_count++; return true; },
+                [&](auto n) { visits.push_back(n->data); return true; },
                 [&](auto n, auto r)
                 {
                     // TODO simplify this
@@ -579,7 +581,7 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
 
         auto r = q.run();
 
-        CHECK(visit_count == 2); // depth first visted everyone
+        CHECK(visits.size() == 2);
         REQUIRE(r.size() == 0);  // frigg is not related to someone licked into being
     }
 }
