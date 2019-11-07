@@ -10,6 +10,7 @@ git_repository(
     name = "cultlang_stdext",
     remote = "https://github.com/cultlang/stdext",
     commit = "4cc13150915535fea70e651934d0a9a76c8311a2",
+    shallow_since = "1568672074 -0700",
 )
 
 ########################
@@ -44,7 +45,8 @@ git_repository(
 git_repository(
     name = "replxx",
     remote = "https://github.com/cgrinker/replxx",
-    commit = "46dfaf9bbebe517bfd1930f2e11f4b47b1a0b7f1"
+    commit = "46dfaf9bbebe517bfd1930f2e11f4b47b1a0b7f1",
+    shallow_since = "1560556649 -0700",
 )
 
 ########################

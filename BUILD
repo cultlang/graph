@@ -56,8 +56,8 @@ cc_binary(
     deps = [
         ":graph",
         "@cultlang_stdext//:code",
+        "@fmt//:fmt",
         "@replxx//:replxx",
-        "@catch//:single_include",
-        "@pegtl//:pegtl"
+        "@pegtl//:pegtl",
     ],
 )
