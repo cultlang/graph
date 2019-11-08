@@ -10,11 +10,23 @@
 
 namespace graph
 {
-    template<typename TType, typename TData>
+    template<typename TData, typename TType, template<typename> typename TLookup>
     struct basic_typed_config
         : basic_core_config<std::tuple<TData, TType>>
     {
-        
+    public:
+		using TypeId = TType;
+
+		template <typename T>
+		inline static TypeId typed_typeToValue()
+        {
+            return TLookup<T>::TypeId;
+        }
+
+		template <typename T>
+		inline static void* typed_store(T const& v);
+		template <typename T>
+		inline static T* typed_load(void* const&);
     };
 
     /*

@@ -45,6 +45,15 @@ namespace graph
         return res;
     }
 
+    template<typename TGraph>
+    typename TGraph::Node const* requireNode(TGraph& g, typename TGraph::CoreData const& v)
+    {
+        typename TGraph::Node const* res = findNode(g, v);
+        if (res == nullptr)
+            res = g.addNode(v);
+        return res;
+    }
+
     template<typename TGraph, typename Func>
     typename std::vector<typename TGraph::Edge const*> collectEdges(TGraph const& g, typename TGraph::Node const* n, Func const& func)
     {

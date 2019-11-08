@@ -4,11 +4,24 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "test.exe",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bazel-bin/test.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false
+        },
+    
+        {
+            "name": "example.exe",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bazel-bin/example.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

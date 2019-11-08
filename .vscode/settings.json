@@ -54,6 +54,8 @@
         "queue": "cpp",
         "algorithm": "cpp",
         "stack": "cpp",
-        "xxatomic": "cpp"
+        "xxatomic": "cpp",
+        "chrono": "cpp",
+        "ratio": "cpp"
     }
 }

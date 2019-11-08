@@ -3,13 +3,10 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 cc_library(
-    name="graph",
+    name="headers",
     visibility = ["//visibility:public"],
     hdrs=glob([
         "src/**/*.h*",
-    ]),
-    srcs=glob([
-        "src/**/*.c*"
     ]),
     includes=[
         "src"
@@ -24,7 +21,21 @@ cc_library(
     ]
 )
 
-
+cc_library(
+    name="code",
+    visibility = ["//visibility:public"],
+    srcs=glob([
+        "src/**/*.c*"
+    ]),
+    copts = select({
+        "@bazel_tools//src/conditions:windows": ["/std:c++17"],
+        "//conditions:default": ["-std=c++17"],
+    }),
+    deps=[
+        ":headers",
+        "@pegtl//:pegtl",
+    ]
+)
 
 cc_test(
     name = "test",
@@ -37,9 +48,26 @@ cc_test(
         "//conditions:default": ["-std=c++17"],
     }),
     deps = [
-        ":graph",
+        ":code",
         "@cultlang_stdext//:code",
         "@catch//:single_include",
+    ],
+)
+
+cc_test(
+    name = "example",
+    srcs = glob([
+        "example/**/*.h*", 
+        "example/**/*.cpp"
+    ]),
+    copts = select({
+        "@bazel_tools//src/conditions:windows": ["/std:c++17"],
+        "//conditions:default": ["-std=c++17"],
+    }),
+    deps = [
+        ":code",
+        "@cultlang_stdext//:code",
+        "@fmt//:fmt"
     ],
 )
 
@@ -54,7 +82,7 @@ cc_binary(
         "//conditions:default": ["-std=c++17"],
     }),
     deps = [
-        ":graph",
+        ":code",
         "@cultlang_stdext//:code",
         "@fmt//:fmt",
         "@replxx//:replxx",
