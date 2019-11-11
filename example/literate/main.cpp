@@ -43,17 +43,28 @@ int main(int argc, char** argv)
     */
 
     std::ifstream file("data/test.nt");
+    if (!file.is_open())
+    {
+        std::cout << "Failed to open file." << std::endl;
+        return -1;
+    }
 
     StrGraph g;
     size_t entry_count = 0;
-    graph::read_nt(file, 
-        [&] (auto subject, auto predicate, auto object, auto _)
-        {
-            auto s = graph::requireNode(g, subject);
-            auto o = graph::requireNode(g, object);
-            g.addEdge(predicate, { s, o });
-            entry_count++;
-        });
+    try
+    {    graph::read_nt(file, 
+            [&] (auto subject, auto predicate, auto object, auto _)
+            {
+                auto s = graph::requireNode(g, subject);
+                auto o = graph::requireNode(g, object);
+                g.addEdge(predicate, { s, o });
+                entry_count++;
+            });
+    }
+    catch (std::exception const& ex)
+    {
+        std::cout << "Error while loading: " << ex.what() << std::endl;
+    }
     
     std::cout << fmt::format("Loaded {0} nodes and {1} edges in {2} entries.", g.nodeCount(), g.edgeCount(), entry_count) << std::endl;
 
@@ -71,7 +82,7 @@ int main(int argc, char** argv)
         .unique()
         .run();
 
-    std::cout << fmt::format("Thor's parents and grand-parents: {0}.", r_thorsParentsAndGrandparents) << std::endl;
+    std::cout << fmt::format("Thor's parents and grand-parents: {0}.", r_thorsParentsAndGrandparents[0]->data) << std::endl;
 
     // thor is related to someone licked into being
     auto r_thorsWeirdCousin = query(&g)
@@ -98,5 +109,5 @@ int main(int argc, char** argv)
             })
         .run();
 
-    std::cout << fmt::format("Thor's weird cousin: {0}.", r_thorsWeirdCousin) << std::endl;
+    std::cout << fmt::format("Thor's weird cousin: {0}.", r_thorsWeirdCousin[0]->data) << std::endl;
 }

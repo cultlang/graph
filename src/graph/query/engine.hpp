@@ -39,7 +39,7 @@ namespace graph
         public:
             typename TGraph::Node const* node() const
             {
-                assert(TGraph::isNode(graphObject));
+                assert(graphObject == nullptr || TGraph::isNode(graphObject));
                 return (typename TGraph::Node const*)graphObject;
             }
 

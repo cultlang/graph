@@ -22,7 +22,7 @@ namespace grammar
     struct predicate : p::sor<iriref> {};
     struct object : p::sor<iriref, literal> {};
 
-    struct statement : p::seq< subject, p::space, predicate, p::space, object, p::space, p::one< '.' > > {};
+    struct statement : p::seq< subject, p::space, predicate, p::space, object, p::space, p::one< '.' >, p::star< p::space > > {};
 
     struct nquadsDoc : p::until< p::eof, p::must< statement > > {};
 

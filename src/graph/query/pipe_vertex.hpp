@@ -37,9 +37,11 @@ namespace graph
             , _it(_nodes.end())
         { }
         inline GraphQueryPipeVertex(typename TGraph::Node const* node)
-            : _nodes({node})
+            : _nodes()
             , _it(_nodes.end())
-        { }
+        {
+            setNode(node);
+        }
 
         inline GraphQueryPipeVertex(GraphQueryPipeVertex const& that)
             : GraphQueryPipeVertex(that._nodes)
@@ -56,6 +58,8 @@ namespace graph
         }
         inline void setNode(typename TGraph::Node const* node)
         {
+            if (node == nullptr)
+                throw graph_error("GraphQueryPipeVertex cannot be set to null vertex.");
             _nodes = { node };
             _it = _nodes.begin();
         }
