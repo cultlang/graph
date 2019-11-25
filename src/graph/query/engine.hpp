@@ -11,7 +11,7 @@
 #include <tuple>
 #include <atomic>
 
-#include "../util.hpp"
+#include "graph/util.hpp"
 
 /*
  * This file contains the query engine, which has the following parts:

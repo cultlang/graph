@@ -56,7 +56,7 @@ namespace graph
         { }
 
         inline GraphQueryPipeEdges(GraphQueryPipeEdges const& that)
-            : GraphQueryPipeEdges(_func_edges, _func_edgeNodes)
+            : GraphQueryPipeEdges(that._func_edges, that._func_edgeNodes)
         { }
 
         inline ~GraphQueryPipeEdges() = default;

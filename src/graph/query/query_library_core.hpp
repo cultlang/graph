@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include "graph/filters/filters.hpp"
+
+#include "engine.hpp"
 #include "query.hpp"
 
 #include "pipe_empty.hpp"
@@ -27,46 +30,83 @@ namespace graph
             return this->addPipe(std::make_unique<GraphQueryPipeVertex<TGraph>>(std::forward<TArgs>(args)...));
         }
 
-        template<typename TFuncEdges>
-        TQueryFinal e(TFuncEdges func_edges)
-        {
-            auto edgeNodeFunc = [](auto n, auto e, auto ne){ return true; };
-            return this->addPipe(std::make_unique<GraphQueryPipeEdges<TGraph, GraphQueryPipeEdgesEnum::All, TFuncEdges, decltype(edgeNodeFunc)>>(std::forward<TFuncEdges>(func_edges), edgeNodeFunc));
-        }
         template<typename TFuncEdges, typename TFuncEdgeNodes>
         TQueryFinal e(TFuncEdges func_edges, TFuncEdgeNodes func_edgeNodes)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeEdges<TGraph, GraphQueryPipeEdgesEnum::All, TFuncEdges, TFuncEdgeNodes>>(std::forward<TFuncEdges>(func_edges), std::forward<TFuncEdgeNodes>(func_edgeNodes)));
+            typedef typename filter::specialize_filter<TGraph, std::decay_t<TFuncEdges>> FuncEdgesSpecializer;
+            typedef typename filter::specialize_filter<TGraph, std::decay_t<TFuncEdgeNodes>> FuncEdgeNodesSpecializer;
+            return this->addPipe(
+                std::make_unique<GraphQueryPipeEdges<
+                    TGraph,
+                    GraphQueryPipeEdgesEnum::All,
+                    typename FuncEdgesSpecializer::type,
+                    typename FuncEdgeNodesSpecializer::type
+                >>(
+                    FuncEdgesSpecializer::specialize(std::forward<TFuncEdges>(func_edges)),
+                    FuncEdgeNodesSpecializer::specialize(std::forward<TFuncEdgeNodes>(func_edgeNodes))
+                ));
+        }
+        template<typename TFuncEdges>
+        TQueryFinal e(TFuncEdges func_edges)
+        {
+            return e(func_edges, filter::constant<true>());
         }
 
-        template<typename TFuncEdges>
-        TQueryFinal in(TFuncEdges func_edges)
-        {
-            auto inEdgeNodeFunc = [](auto n, auto e, auto ne){ return true; };
-            return this->addPipe(std::make_unique<GraphQueryPipeEdges<TGraph, GraphQueryPipeEdgesEnum::Incoming, TFuncEdges, decltype(inEdgeNodeFunc)>>(std::forward<TFuncEdges>(func_edges), inEdgeNodeFunc));
-        }
         template<typename TFuncEdges, typename TFuncEdgeNodes>
         TQueryFinal in(TFuncEdges func_edges, TFuncEdgeNodes func_edgeNodes)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeEdges<TGraph, GraphQueryPipeEdgesEnum::Incoming, TFuncEdges, TFuncEdgeNodes>>(std::forward<TFuncEdges>(func_edges), std::forward<TFuncEdgeNodes>(func_edgeNodes)));
+            typedef typename filter::specialize_filter<TGraph, std::decay_t<TFuncEdges>> FuncEdgesSpecializer;
+            typedef typename filter::specialize_filter<TGraph, std::decay_t<TFuncEdgeNodes>> FuncEdgeNodesSpecializer;
+            return this->addPipe(
+                std::make_unique<GraphQueryPipeEdges<
+                    TGraph,
+                    GraphQueryPipeEdgesEnum::Incoming,
+                    typename FuncEdgesSpecializer::type,
+                    typename FuncEdgeNodesSpecializer::type
+                >>(
+                    FuncEdgesSpecializer::specialize(std::forward<TFuncEdges>(func_edges)),
+                    FuncEdgeNodesSpecializer::specialize(std::forward<TFuncEdgeNodes>(func_edgeNodes))
+                ));
+        }
+        template<typename TFuncEdges>
+        TQueryFinal in(TFuncEdges func_edges)
+        {
+            return in(func_edges, filter::constant<true>());
         }
 
-        template<typename TFuncEdges>
-        TQueryFinal out(TFuncEdges func_edges)
-        {
-            auto outEdgeNodeFunc = [](auto n, auto e, auto ne){ return true; };
-            return this->addPipe(std::make_unique<GraphQueryPipeEdges<TGraph, GraphQueryPipeEdgesEnum::Outgoing, TFuncEdges, decltype(outEdgeNodeFunc)>>(std::forward<TFuncEdges>(func_edges), outEdgeNodeFunc));
-        }
         template<typename TFuncEdges, typename TFuncEdgeNodes>
         TQueryFinal out(TFuncEdges func_edges, TFuncEdgeNodes func_edgeNodes)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeEdges<TGraph, GraphQueryPipeEdgesEnum::Outgoing, TFuncEdges, TFuncEdgeNodes>>(std::forward<TFuncEdges>(func_edges), std::forward<TFuncEdgeNodes>(func_edgeNodes)));
+            typedef typename filter::specialize_filter<TGraph, std::decay_t<TFuncEdges>> FuncEdgesSpecializer;
+            typedef typename filter::specialize_filter<TGraph, std::decay_t<TFuncEdgeNodes>> FuncEdgeNodesSpecializer;
+            return this->addPipe(
+                std::make_unique<GraphQueryPipeEdges<
+                    TGraph,
+                    GraphQueryPipeEdgesEnum::Outgoing,
+                    typename FuncEdgesSpecializer::type,
+                    typename FuncEdgeNodesSpecializer::type
+                >>(
+                    FuncEdgesSpecializer::specialize(std::forward<TFuncEdges>(func_edges)),
+                    FuncEdgeNodesSpecializer::specialize(std::forward<TFuncEdgeNodes>(func_edgeNodes))
+                ));
+        }
+        template<typename TFuncEdges>
+        TQueryFinal out(TFuncEdges func_edges)
+        {
+            return out(func_edges, filter::constant<true>());
         }
 
         template<typename TFuncNodes>
         TQueryFinal filter(TFuncNodes func_nodes)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeFilter<TGraph, TFuncNodes>>(std::forward<TFuncNodes>(func_nodes)));
+            typedef typename filter::specialize_filter<TGraph, std::decay_t<TFuncNodes>> FuncNodesSpecializer;
+            return this->addPipe(
+                std::make_unique<GraphQueryPipeFilter<
+                    TGraph,
+                    typename FuncNodesSpecializer::type
+                >>(
+                    FuncNodesSpecializer::specialize(std::forward<TFuncNodes>(func_nodes))
+                ));
         }
         
         TQueryFinal unique()
@@ -81,7 +121,10 @@ namespace graph
 
         TQueryFinal as(std::string const& marker)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeMark<TGraph>>(this->engine()->requireMarker(marker)));
+            return this->addPipe(
+                std::make_unique<GraphQueryPipeMark<TGraph>>(
+                    this->engine()->requireMarker(marker)
+                ));
         }
 
         TQueryFinal merge(std::vector<std::string> const& markers)
@@ -114,25 +157,57 @@ namespace graph
         template<typename TFuncSubQuery, typename TFuncRepeatFilter>
         TQueryFinal repeat_breadth(TFuncSubQuery sub_query, TFuncRepeatFilter repeat)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeRepeatBreadthFirst<TGraph, TFuncRepeatFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat));
+            return this->addPipe(
+                std::make_unique<GraphQueryPipeRepeatBreadthFirst<
+                    TGraph,
+                    TFuncRepeatFilter
+                >>(
+                    this->extractPipeline(sub_query(this->newQueryPipeline())),
+                    repeat
+                ));
         }
 
         template<typename TFuncSubQuery, typename TFuncRepeatFilter, typename TFuncEmitFilter>
         TQueryFinal repeat_breadth(TFuncSubQuery sub_query, TFuncRepeatFilter repeat, TFuncEmitFilter emit)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeRepeatBreadthFirst<TGraph, TFuncRepeatFilter, TFuncEmitFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat, emit));
+            return this->addPipe(
+                std::make_unique<GraphQueryPipeRepeatBreadthFirst<
+                    TGraph,
+                    TFuncRepeatFilter,
+                    TFuncEmitFilter
+                >>(
+                    this->extractPipeline(sub_query(this->newQueryPipeline())),
+                    repeat,
+                    emit
+                ));
         }
 
         template<typename TFuncSubQuery, typename TFuncRepeatFilter>
         TQueryFinal repeat_depth(TFuncSubQuery sub_query, TFuncRepeatFilter repeat)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeRepeatDepthFirst<TGraph, TFuncRepeatFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat));
+            return this->addPipe(
+                std::make_unique<GraphQueryPipeRepeatDepthFirst<
+                    TGraph,
+                    TFuncRepeatFilter
+                >>(
+                    this->extractPipeline(sub_query(this->newQueryPipeline())),
+                    repeat
+                ));
         }
 
         template<typename TFuncSubQuery, typename TFuncRepeatFilter, typename TFuncEmitFilter>
         TQueryFinal repeat_depth(TFuncSubQuery sub_query, TFuncRepeatFilter repeat, TFuncEmitFilter emit)
         {
-            return this->addPipe(std::make_unique<GraphQueryPipeRepeatDepthFirst<TGraph, TFuncRepeatFilter, TFuncEmitFilter>>(this->extractPipeline(sub_query(this->newQueryPipeline())), repeat, emit));
+            return this->addPipe(
+                std::make_unique<GraphQueryPipeRepeatDepthFirst<
+                    TGraph,
+                    TFuncRepeatFilter,
+                    TFuncEmitFilter
+                >>(
+                    this->extractPipeline(sub_query(this->newQueryPipeline())),
+                    repeat,
+                    emit
+                ));
         }
     };
 }

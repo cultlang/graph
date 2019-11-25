@@ -28,6 +28,8 @@
 
 #include "algo.hpp"
 
+#include "filters/filters.hpp"
+
 #include "readers/readers.h"
 
 #include "query/engine.hpp"
