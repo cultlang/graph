@@ -7,7 +7,9 @@
 #include <vector>
 #include <deque>
 #include <string>
+
 #include "../util.hpp"
+#include "storage/simple.hpp"
 
 namespace graph
 {
@@ -27,7 +29,7 @@ namespace graph
 
         // support plf colony?
         template<typename T>
-        using Storage = std::deque<T>;
+        using Storage = SimpleStorage<T>;
     };
 
     // TODO, another graph type that is more effeciently organized
@@ -117,6 +119,7 @@ namespace graph
 
             Core* owner;
         };
+
 
     // Actual type
     public:

@@ -104,7 +104,7 @@ This is then expanded (by graph) into the following inheritence structure:
   * `GraphTyped<GraphCore<my_graph_config>>::Actual<TFinal>` (`graph_typed.hpp`)
     * `GraphCore<my_graph_config>::Actual<TFinal>` (`graph_core.hpp`)
 
-From this we can see that the graph type is constructed twice. Once with the named class wrapping the config, this is resposinle for deciding what the final types and helper functions will be. Indeed `GraphFinalizer` contains the primary type interface of the resulting graph by joining togeather the graph types (completeing the dual path hierarcy):
+From this we can see that the graph type is constructed twice. Once with the named class wrapping the config, this is responsible for deciding what the final types and helper functions will be. Indeed `GraphFinalizer` contains the primary type interface of the resulting graph by joining together the graph types (completing the dual path hierarchy):
 
 * Forwards `MetaFlags`
 * Forwards `Data`
