@@ -9,7 +9,7 @@
 
 #include "readers.h"
 
-namespace grammar
+namespace nquads
 {
     namespace p = tao::pegtl;
 
@@ -21,11 +21,13 @@ namespace grammar
     struct subject : p::sor<iriref> {};
     struct predicate : p::sor<iriref> {};
     struct object : p::sor<iriref, literal> {};
+    struct label : p::sor<iriref> {};
 
-    struct statement : p::seq< subject, p::space, predicate, p::space, object, p::space, p::one< '.' >, p::star< p::space > > {};
+    struct triple : p::seq< subject, p::space, predicate, p::space, object, p::space > {};
+    struct quad : p::seq< subject, p::space, predicate, p::space, object, p::space, label, p::space > {};
+    struct statement : p::seq< p::sor< quad, triple >, p::one< '.' >, p::star< p::space > > {};
 
-    struct nquadsDoc : p::until< p::eof, p::must< statement > > {};
-
+    struct document : p::until< p::eof, p::must< statement > > {};
 
 
     template <typename Rule>
@@ -78,6 +80,6 @@ namespace graph
         tao::pegtl::istream_input parsein( in, 1024 * 1024 * 10, "" );
 
         std::vector<std::string> entryVec(4);
-        return tao::pegtl::parse< grammar::nquadsDoc, grammar::action >( parsein, func, entryVec );
+        return tao::pegtl::parse< nquads::document, nquads::action >( parsein, func, entryVec );
     }
 }

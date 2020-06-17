@@ -6,4 +6,4 @@
 
 We use bazel, [follow instructions for installing bazel on your platform](https://docs.bazel.build/versions/master/install.html).
 
-To run tests run `bazel test ...`
+To run tests run `bazel test ... --test_output=errors --enable_runfiles` (from an admin powershell on windows)

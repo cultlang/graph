@@ -46,11 +46,33 @@ namespace graph
     }
 
     template<typename TGraph>
+    typename TGraph::Label const* findLabel(TGraph const& g, typename TGraph::CoreData const& v)
+    {
+        typename TGraph::Label const* res = nullptr;
+        g.forAllLabels([&](auto n)
+        {
+            if (n->data == v)
+                res = n;
+            return n->data != v;
+        });
+        return res;
+    }
+
+    template<typename TGraph>
     typename TGraph::Node const* requireNode(TGraph& g, typename TGraph::CoreData const& v)
     {
         typename TGraph::Node const* res = findNode(g, v);
         if (res == nullptr)
             res = g.addNode(v);
+        return res;
+    }
+
+    template<typename TGraph>
+    typename TGraph::Label const* requireLabel(TGraph& g, typename TGraph::CoreData const& v)
+    {
+        typename TGraph::Label const* res = findLabel(g, v);
+        if (res == nullptr)
+            res = g.addLabel(v);
         return res;
     }
 

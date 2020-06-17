@@ -58,8 +58,11 @@ cc_test(
     name = "example",
     srcs = glob([
         "example/**/*.h*", 
-        "example/**/*.cpp"
+        "example/**/*.cpp",
     ]),
+    data = [
+        "data/test.nt",
+    ],
     copts = select({
         "@bazel_tools//src/conditions:windows": ["/std:c++17"],
         "//conditions:default": ["-std=c++17"],

@@ -54,7 +54,6 @@ git_repository(
 git_repository(
     name = "pegtl",
     remote = "https://github.com/mason-bially/PEGTL",
-    commit = "d133010cb027acb6265fc2726a93a07e7f5e11b0",
-    shallow_since = "1562713485 -0700"
+    commit = "7c6b89f5ee75fc7e47ff69a18851d841acd05ed6",
 )
 

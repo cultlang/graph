@@ -14,7 +14,7 @@ void test_help::fillStrGraphWithNorse(test_help::str_graph & g)
      * - [Edges]
      *   - parents: where possible is organized (child, mother, father)
      *   - married: where possible is organized (husband, wife)
-     *   - creator: (creator, createe)
+     *   - creator: (createe, creator, [other_creators])
      *     - [Props]
      *       - licked-into-being: the creator licked the createe into being
      * - [Nodes]

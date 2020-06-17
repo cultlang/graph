@@ -5,6 +5,9 @@
 #include <iostream>
 #include <fstream>
 #include <chrono>
+#include <filesystem>
+
+#include "tao/pegtl.hpp"
 
 template <typename T, typename TRep, typename TPeriod>
 T duration_cast(const std::chrono::duration<TRep, TPeriod>& duration)

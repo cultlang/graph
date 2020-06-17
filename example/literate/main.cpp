@@ -53,11 +53,16 @@ int main(int argc, char** argv)
     size_t entry_count = 0;
     try
     {    graph::read_nt(file, 
-            [&] (auto subject, auto predicate, auto object, auto _)
+            [&] (auto subject, auto predicate, auto object, auto label)
             {
                 auto s = graph::requireNode(g, subject);
                 auto o = graph::requireNode(g, object);
-                g.addEdge(predicate, { s, o });
+                auto p = g.addEdge(predicate, { s, o });
+                if (label != nullptr)
+                {
+                    auto l = graph::requireLabel(g, *label);
+                    //g.attachLabel(, l);
+                }
                 entry_count++;
             });
     }
