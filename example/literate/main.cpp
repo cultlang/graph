@@ -52,7 +52,8 @@ int main(int argc, char** argv)
     StrGraph g;
     size_t entry_count = 0;
     try
-    {    graph::read_nt(file, 
+    {
+        graph::read_nt(file, 
             [&] (auto subject, auto predicate, auto object, auto label)
             {
                 auto s = graph::requireNode(g, subject);
@@ -69,50 +70,61 @@ int main(int argc, char** argv)
     catch (std::exception const& ex)
     {
         std::cout << "Error while loading: " << ex.what() << std::endl;
+        return 1;
     }
     
     std::cout << fmt::format("Loaded {0} nodes and {1} edges in {2} entries.", g.nodeCount(), g.edgeCount(), entry_count) << std::endl;
 
     /* An example query
     */
+   
+    try
+    {
+        auto thor = graph::findNode(g, "thor");
 
-    // thor's parents and grandparents
-    auto r_thorsParentsAndGrandparents = graph::query(&g)
-        .v(graph::findNode(g, "thor"))
-        .out( [](auto n, auto e) { return e->data == "parents"; } )
-        .as("parent")
-        .out( [](auto n, auto e) { return e->data == "parents"; } )
-        .as("grand-parent")
-        .merge({ "parent", "grand-parent" })
-        .unique()
-        .run();
+        // thor's parents and grandparents
+        auto r_thorsParentsAndGrandparents = graph::query(&g)
+            .v(thor)
+            .out( [](auto n, auto e) { return e->data == "parents"; } )
+            .as("parent")
+            .out( [](auto n, auto e) { return e->data == "parents"; } )
+            .as("grand-parent")
+            .merge({ "parent", "grand-parent" })
+            .unique()
+            .run();
 
-    std::cout << fmt::format("Thor's parents and grand-parents: {0}.", r_thorsParentsAndGrandparents[0]->data) << std::endl;
+        std::cout << fmt::format("Thor's parents and grand-parents: {0}.", r_thorsParentsAndGrandparents[0]->data) << std::endl;
 
-    // thor is related to someone licked into being
-    auto r_thorsWeirdCousin = query(&g)
-        .v(findNode(g, "thor"))
-        .repeat_breadth(
-            [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
-            [&](auto n) { return true; },
-            [&](auto n, auto r)
-            {
-                // TODO simplify this
-                bool found = false;
-                g.forAllEdgesOnNode(n, [&](auto e)
+        // thor is related to someone licked into being
+        auto r_thorsWeirdCousin = query(&g)
+            .v(findNode(g, "thor"))
+            .repeat_breadth(
+                [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
+                [&](auto n) { return true; },
+                [&](auto n, auto r)
                 {
-                    if (e->data != "creator") return true;
-                    g.forAllPropsOnEdge(e, [&](auto p)
+                    // TODO simplify this
+                    bool found = false;
+                    g.forAllEdgesOnNode(n, [&](auto e)
                     {
-                        found = p->data == "licked-into-being";
+                        if (e->data != "creator") return true;
+                        g.forAllPropsOnEdge(e, [&](auto p)
+                        {
+                            found = p->data == "licked-into-being";
+                            return !found;
+                        });
                         return !found;
                     });
-                    return !found;
-                });
-                g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
-                return found;
-            })
-        .run();
+                    g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
+                    return found;
+                })
+            .run();
 
-    std::cout << fmt::format("Thor's weird cousin: {0}.", r_thorsWeirdCousin[0]->data) << std::endl;
+        std::cout << fmt::format("Thor's weird cousin: {0}.", r_thorsWeirdCousin[0]->data) << std::endl;
+    }
+    catch (std::exception const& ex)
+    {
+        std::cout << "Error while loading: " << ex.what() << std::endl;
+        return 1;
+    }
 }
