@@ -6,7 +6,7 @@
 
 using namespace graph;
 
-void test_help::fillStrGraphWithNorse(test_help::str_graph & g)
+void test_help::fillStrGraphWithNorse(test_help::StrGraph & g)
 {
     // from http://www.veritablehokum.com/comic/the-norse-god-family-tree/
 
@@ -25,7 +25,7 @@ void test_help::fillStrGraphWithNorse(test_help::str_graph & g)
      */ 
 
     // Helper temporaries
-    typename test_help::str_graph::Edge* e;
+    typename test_help::StrGraph::Edge* e;
 
 
     auto audumbla = g.addNode("audumbla");
@@ -153,7 +153,7 @@ using namespace Catch::Matchers;
 
 TEST_CASE( "test_help works correctly", "[test_help]" )
 {
-    test_help::str_graph g;
+    test_help::StrGraph g;
 
     test_help::fillStrGraphWithNorse(g);
 }

@@ -193,10 +193,10 @@ In general the iteration functions (mirroring most of the getter functions) are:
 * `void forAllEdges(Func)`
 * `void forAllNodesInLabel(Func)`
 * `void forAllLabelsOnNode(Func)`
-* `void forAllEdgesOnNode(Func)`
-* `void forAllPropsOnNode(Func)`
-* `void forAllNodesInEdge(Func)`
-* `void forAllPropsOnEdge(Func)`
+* `void forEdgesOnNode(Func)`
+* `void forPropsOnNode(Func)`
+* `void forNodesInEdge(Func)`
+* `void forPropsOnEdge(Func)`
 
 These allow for early termination with an optional boolean return value. In general these should be prefered for most filter/selection operations.
 

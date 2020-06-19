@@ -15,7 +15,11 @@
 
 namespace test_help
 {
-    using str_graph = graph::Graph< graph::GraphCore< graph::basic_core_config<std::string> > >;
+    using StrGraphConfig = graph::model::ConfigBuilder<
+        graph::model::DataCoreConfigBuilder<std::string, std::string>,
+        graph::model::StorageConfigBuilder<graph::storage::SimpleStorage>
+    >;
+    using StrGraph = graph::model::PathPropertyGraph< StrGraphConfig >;
 
-    void fillStrGraphWithNorse(str_graph & g);
+    void fillStrGraphWithNorse(StrGraph & g);
 }

@@ -21,12 +21,9 @@
 
 #include "util.hpp"
 
-#include "model/storage/simple.hpp"
+#include "storage/storage.h"
 
-#include "model/core.hpp"
-#include "model/typed.hpp"
-#include "model/todo.hpp"
-#include "model/final.hpp"
+#include "model/model.h"
 
 #include "algo.hpp"
 

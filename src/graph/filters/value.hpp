@@ -30,10 +30,10 @@ namespace filter
     struct ValueFilterSpecialized
     {
     protected:
-        typename TGraph::CoreData _value;
+        typename TGraph::EdgeData _value;
     
     public:
-        inline ValueFilterSpecialized(typename TGraph::CoreData const& value)
+        inline ValueFilterSpecialized(typename TGraph::EdgeData const& value)
             : _value(value)
         {
 
@@ -47,7 +47,7 @@ namespace filter
         }
 
     public:
-        inline bool operator()(typename TGraph::Core const* c)
+        inline bool operator()(typename TGraph::Edge const* c)
         {
             return c->data == _value;
         }

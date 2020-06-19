@@ -24,6 +24,15 @@
 namespace graph
 {
     template<typename TGraph>
+    using GraphVariant = std::variant<
+        typename TGraph::Node const*,
+        typename TGraph::Edge const*,
+        typename TGraph::Path const*,
+        typename TGraph::Label const*,
+        typename TGraph::Prop const*
+    >;
+
+    template<typename TGraph>
     class GraphQueryEngine final
     {
     public:
@@ -32,15 +41,15 @@ namespace graph
         class Gremlin
         {
         public:
-            typename TGraph::Core const* graphObject;
+            typename GraphVariant<TGraph> graphObject;
 
             std::map<size_t, typename TGraph::Node const*> marks;
 
         public:
             typename TGraph::Node const* node() const
             {
-                assert(graphObject == nullptr || TGraph::isNode(graphObject));
-                return (typename TGraph::Node const*)graphObject;
+                assert(std::holds_alternative<typename TGraph::Node const*>(graphObject));
+                return std::get<typename TGraph::Node const*>(graphObject);
             }
 
 

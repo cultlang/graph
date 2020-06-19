@@ -16,7 +16,7 @@ using namespace Catch::Matchers;
 
 TEST_CASE( "graph::findNode", "[graph::findNode]" )
 {
-    test_help::str_graph g;
+    test_help::StrGraph g;
 
     g.addNode("test");
 

@@ -68,7 +68,7 @@ void Semantics::newGraph(std::shared_ptr<ParseTree> s)
     {
         throw stdext::exception("Graph: {0} Exists", args[0]);
     }
-    _graphs[stripQuotes(args[0])] = std::make_shared<Semantics::str_graph>();
+    _graphs[stripQuotes(args[0])] = std::make_shared<Semantics::StrGraph>();
 }
 
 void Semantics::deleteGraph(std::shared_ptr<ParseTree> s)
@@ -85,13 +85,13 @@ void Semantics::deleteGraph(std::shared_ptr<ParseTree> s)
     _graphs.erase(args[0]);
 }
 
-void Semantics::addNode(std::shared_ptr<str_graph> g, std::shared_ptr<ParseTree> t)
+void Semantics::addNode(std::shared_ptr<StrGraph> g, std::shared_ptr<ParseTree> t)
 {
     auto args = std::vector<std::string>(t->sexprs[0].begin() + 1, t->sexprs[0].end());
-    // res_type();//res_type{const_cast<str_graph::Node*>(g->addNode(args[0]))};
+    // res_type();//res_type{const_cast<StrGraph::Node*>(g->addNode(args[0]))};
 }
 
-void Semantics::addEdge(std::shared_ptr<str_graph> g, std::shared_ptr<ParseTree> t)
+void Semantics::addEdge(std::shared_ptr<StrGraph> g, std::shared_ptr<ParseTree> t)
 {
     auto args = std::vector<std::string>(t->sexprs[0].begin() + 1, t->sexprs[0].end());
     if(args.size() != 3)
@@ -105,10 +105,10 @@ void Semantics::addEdge(std::shared_ptr<str_graph> g, std::shared_ptr<ParseTree>
     if(!to) throw stdext::exception("To Node Does not exist");
     
     auto e = g->addEdge(args[2], {from, to});
-    //return res_type(); //res_type{const_cast<str_graph::Node*>(from), const_cast<str_graph::Node*>(to)};
+    //return res_type(); //res_type{const_cast<StrGraph::Node*>(from), const_cast<StrGraph::Node*>(to)};
 }
 
-void Semantics::query(std::shared_ptr<str_graph>, std::shared_ptr<ParseTree>)
+void Semantics::query(std::shared_ptr<StrGraph>, std::shared_ptr<ParseTree>)
 {
 
 }

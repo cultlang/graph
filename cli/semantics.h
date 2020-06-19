@@ -21,12 +21,17 @@ namespace semantics {
 
 
     class Semantics {
-        using str_graph = graph::Graph< graph::GraphCore< graph::basic_core_config<std::string> > >;
-        using res_type = std::vector<str_graph::Node*>;
-        std::map<std::string, std::shared_ptr<str_graph>> _graphs;
+        using StrGraphConfig = graph::model::ConfigBuilder<
+            graph::model::DataCoreConfigBuilder<std::string, std::string>,
+            graph::model::StorageConfigBuilder<graph::storage::SimpleStorage>
+        >;
+        using StrGraph = graph::model::PathPropertyGraph< StrGraphConfig >;
+
+        using res_type = std::vector<StrGraph::Node*>;
+        std::map<std::string, std::shared_ptr<StrGraph>> _graphs;
         std::map<std::string, std::function<void(std::shared_ptr<ParseTree>)>> _globals;
 
-        std::map<std::string, std::function<void(std::shared_ptr<str_graph>, std::shared_ptr<ParseTree>)>> _graphFunctions;
+        std::map<std::string, std::function<void(std::shared_ptr<StrGraph>, std::shared_ptr<ParseTree>)>> _graphFunctions;
         
     public:
         Semantics();
@@ -38,11 +43,11 @@ namespace semantics {
         void deleteGraph(std::shared_ptr<ParseTree>);
 
     // Graph Mutation
-        void addNode(std::shared_ptr<str_graph>, std::shared_ptr<ParseTree>);
-        void addEdge(std::shared_ptr<str_graph>, std::shared_ptr<ParseTree>);
+        void addNode(std::shared_ptr<StrGraph>, std::shared_ptr<ParseTree>);
+        void addEdge(std::shared_ptr<StrGraph>, std::shared_ptr<ParseTree>);
 
     // Query
-        void query(std::shared_ptr<str_graph>, std::shared_ptr<ParseTree>);
+        void query(std::shared_ptr<StrGraph>, std::shared_ptr<ParseTree>);
 
     };
 }

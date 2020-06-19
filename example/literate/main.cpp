@@ -24,10 +24,11 @@
  * abstract base type could be used, or one of the mixins that provides better support for diverse
  * types.
  */
-using StrGraph = graph::Graph<
-    graph::GraphCore<
-    graph::basic_core_config<std::string>
-    > >;
+using StrGraphConfig = graph::model::ConfigBuilder<
+    graph::model::DataCoreConfigBuilder<std::string, std::string>,
+    graph::model::StorageConfigBuilder<graph::storage::SimpleStorage>
+>;
+using StrGraph = graph::model::PathPropertyGraph< StrGraphConfig >;
 
 /* TODO For a more complex example we will create a simple tagged record and use it as part of a typed
  * graph. The design of our data model allows for an arbitrary number of orthoganol mixins, though
@@ -96,8 +97,8 @@ int main(int argc, char** argv)
         std::cout << fmt::format("Thor's parents and grand-parents: {0}.", r_thorsParentsAndGrandparents[0]->data) << std::endl;
 
         // thor is related to someone licked into being
-        auto r_thorsWeirdCousin = query(&g)
-            .v(findNode(g, "thor"))
+        auto r_thorsWeirdCousin = graph::query(&g)
+            .v(graph::findNode(g, "thor"))
             .repeat_breadth(
                 [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
                 [&](auto n) { return true; },
@@ -105,17 +106,17 @@ int main(int argc, char** argv)
                 {
                     // TODO simplify this
                     bool found = false;
-                    g.forAllEdgesOnNode(n, [&](auto e)
+                    g.forEdgesOnNode(n, [&](auto e)
                     {
                         if (e->data != "creator") return true;
-                        g.forAllPropsOnEdge(e, [&](auto p)
+                        g.forPropsOnEdge(e, [&](auto p)
                         {
                             found = p->data == "licked-into-being";
                             return !found;
                         });
                         return !found;
                     });
-                    g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
+                    g.forPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
                     return found;
                 })
             .run();

@@ -69,35 +69,35 @@ namespace graph
             return res;
         };
 
-        static inline bool _modeFilterEdges(typename TGraph::Node const* n, typename TGraph::Edge const* e)
+        static inline bool _modeFilterEdges(TGraph const& g, typename TGraph::Node const* n, typename TGraph::Edge const* e)
         {
             if constexpr (EMode == GraphQueryPipeEdgesEnum::All)
                 return true;
             else if constexpr (EMode == GraphQueryPipeEdgesEnum::Incoming)
-                return edgeIsIncoming<TGraph>(n, e);
+                return edgeIsIncoming<TGraph>(g, n, e);
             else if constexpr (EMode == GraphQueryPipeEdgesEnum::Outgoing)
-                return edgeIsOutgoing<TGraph>(n, e);
+                return edgeIsOutgoing<TGraph>(g, n, e);
             else
                 static_assert(stdext::always_false, "Bad EMode");
             
         }
 
-        static inline bool _modeFilterEdgeNodes(typename TGraph::Node const* n, typename TGraph::Edge const* e, typename TGraph::Node const* en)
+        static inline bool _modeFilterEdgeNodes(TGraph const& g, typename TGraph::Node const* n, typename TGraph::Edge const* e, typename TGraph::Node const* en)
         {
             if constexpr (EMode == GraphQueryPipeEdgesEnum::All)
                 return n != en;
             else if constexpr (EMode == GraphQueryPipeEdgesEnum::Incoming)
-                return !edgeIsIncoming<TGraph>(en, e);
+                return !edgeIsIncoming<TGraph>(g, en, e);
             else if constexpr (EMode == GraphQueryPipeEdgesEnum::Outgoing)
-                return !edgeIsOutgoing<TGraph>(en, e);
+                return !edgeIsOutgoing<TGraph>(g, en, e);
             else
                 static_assert(stdext::always_false, "Bad EMode");
             
         }
 
-        inline bool _call_func_edges(typename TGraph::Node const* n, typename TGraph::Edge const* e)
+        inline bool _call_func_edges(TGraph const& g, typename TGraph::Node const* n, typename TGraph::Edge const* e)
         {
-            if (!_modeFilterEdges(n, e))
+            if (!_modeFilterEdges(g, n, e))
                 return false;
 
             if constexpr (std::is_invocable_v<TFuncEdges, decltype(e)>)
@@ -108,9 +108,9 @@ namespace graph
                 static_assert(stdext::always_false, "TFuncNodes bad signature.");
         }
 
-        inline bool _call_func_edgeNodes(typename TGraph::Node const* n, typename TGraph::Edge const* e, typename TGraph::Node const* en)
+        inline bool _call_func_edgeNodes(TGraph const& g, typename TGraph::Node const* n, typename TGraph::Edge const* e, typename TGraph::Node const* en)
         {
-            if (!_modeFilterEdgeNodes(n, e, en))
+            if (!_modeFilterEdgeNodes(g, n, e, en))
                 return false;
 
             if constexpr (std::is_invocable_v<TFuncEdgeNodes, decltype(en)>)
@@ -139,7 +139,7 @@ namespace graph
 
                 auto n = _gremlin->node();
                 _edges = collectEdges(*graph, n,
-                    [&](auto e) { return _call_func_edges(n, e); });
+                    [&](auto e) { return _call_func_edges(*graph, n, e); });
                 _edges_it = _edges.begin();
                 _nodes_it = _nodes.end();
             }
@@ -155,7 +155,7 @@ namespace graph
                 auto n = _gremlin->node();
                 auto e = (typename TGraph::Edge const*) *(_edges_it ++);
                 _nodes = collectNodes(*graph, e, 
-                    [&](auto en) { return _call_func_edgeNodes(n, e, en); });
+                    [&](auto en) { return _call_func_edgeNodes(*graph, n, e, en); });
                 _nodes_it = _nodes.begin();
             }
 

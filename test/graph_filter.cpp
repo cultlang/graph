@@ -17,13 +17,16 @@ using namespace Catch::Matchers;
 
 TEST_CASE( "graph filter basics", "[graph::filters]" )
 {
+    test_help::StrGraph g;
+
+    test_help::fillStrGraphWithNorse(g);
 
 }
 
 
 TEST_CASE( "graph filters usable in graph::query() builders", "[graph::filters]" )
 {
-    test_help::str_graph g;
+    test_help::StrGraph g;
 
     test_help::fillStrGraphWithNorse(g);
 

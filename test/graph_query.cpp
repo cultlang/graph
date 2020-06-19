@@ -17,7 +17,7 @@ using namespace Catch::Matchers;
 
 TEST_CASE( "graph::query() basics", "[graph::GraphQuery]" )
 {
-    test_help::str_graph g;
+    test_help::StrGraph g;
 
     test_help::fillStrGraphWithNorse(g);
 
@@ -172,7 +172,7 @@ TEST_CASE( "graph::query() basics", "[graph::GraphQuery]" )
 
 TEST_CASE( "graph::query() syntax traversal queries", "[graph::GraphQuery]" )
 {
-    test_help::str_graph g;
+    test_help::StrGraph g;
 
     test_help::fillStrGraphWithNorse(g);
 
@@ -181,7 +181,7 @@ TEST_CASE( "graph::query() syntax traversal queries", "[graph::GraphQuery]" )
         auto q = query(&g)
             .v(findNode(g, "thor"))
             // same as "out" (mostly)
-            .e( [](auto n, auto e) { return edgeIsOutgoing<decltype(g)>(n, e) && e->data == "parents"; } );
+            .e( [&](auto n, auto e) { return edgeIsOutgoing(g, n, e) && e->data == "parents"; } );
 
         CHECK(q->getPipeline()->countPipes() == 2);
         
@@ -195,16 +195,16 @@ TEST_CASE( "graph::query() syntax traversal queries", "[graph::GraphQuery]" )
         auto q_mom = query(&g)
             .v(findNode(g, "thor"))
             // same as "out" (mostly)
-            .e( [](auto n, auto e) { return edgeIsOutgoing<decltype(g)>(n, e) && e->data == "parents"; },
+            .e( [&](auto n, auto e) { return edgeIsOutgoing(g, n, e) && e->data == "parents"; },
                 // mother is in slot 1 (size guard not needed: 2 size edges are guarnteed)
-                [](auto n, auto e, auto ne) { return e->nodes[1] == ne; });
+                [&](auto n, auto e, auto ne) { return g.indexOfNodeInEdge(ne, e) == 1; });
 
         auto q_dad = query(&g)
             .v(findNode(g, "thor"))
             // same as "out" (mostly)
-            .e( [](auto n, auto e) { return edgeIsOutgoing<decltype(g)>(n, e) && e->data == "parents"; },
+            .e( [&](auto n, auto e) { return edgeIsOutgoing(g, n, e) && e->data == "parents"; },
                 // father is in slot 2 (size guard requried)
-                [](auto n, auto e, auto ne) { return e->nodes.size() > 2 && e->nodes[2] == ne; });
+                [&](auto n, auto e, auto ne) { return g.indexOfNodeInEdge(ne, e) == 2; });
 
         CHECK(q_mom->getPipeline()->countPipes() == 2);
         CHECK(q_dad->getPipeline()->countPipes() == 2);
@@ -335,7 +335,7 @@ TEST_CASE( "graph::query() syntax traversal queries", "[graph::GraphQuery]" )
 
 TEST_CASE( "graph::query() syntax label queries", "[graph::GraphQuery]" )
 {
-    test_help::str_graph g;
+    test_help::StrGraph g;
 
     test_help::fillStrGraphWithNorse(g);
 
@@ -412,7 +412,7 @@ TEST_CASE( "graph::query() syntax label queries", "[graph::GraphQuery]" )
 
 TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
 {
-    test_help::str_graph g;
+    test_help::StrGraph g;
 
     test_help::fillStrGraphWithNorse(g);
 
@@ -455,17 +455,17 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
                 {
                     // TODO simplify this
                     bool found = false;
-                    g.forAllEdgesOnNode(n, [&](auto e)
+                    g.forEdgesOnNode(n, [&](auto e)
                     {
                         if (e->data != "creator") return true;
-                        g.forAllPropsOnEdge(e, [&](auto p)
+                        g.forPropsOnEdge(e, [&](auto p)
                         {
                             found = p->data == "licked-into-being";
                             return !found;
                         });
                         return !found;
                     });
-                    g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
+                    g.forPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
                     return found;
                 });
 
@@ -492,17 +492,17 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
                 {
                     // TODO simplify this
                     bool found = false;
-                    g.forAllEdgesOnNode(n, [&](auto e)
+                    g.forEdgesOnNode(n, [&](auto e)
                     {
                         if (e->data != "creator") return true;
-                        g.forAllPropsOnEdge(e, [&](auto p)
+                        g.forPropsOnEdge(e, [&](auto p)
                         {
                             found = p->data == "licked-into-being";
                             return !found;
                         });
                         return !found;
                     });
-                    g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
+                    g.forPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
                     return found;
                 });
 
@@ -526,17 +526,17 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
                 {
                     // TODO simplify this
                     bool found = false;
-                    g.forAllEdgesOnNode(n, [&](auto e)
+                    g.forEdgesOnNode(n, [&](auto e)
                     {
                         if (e->data != "creator") return true;
-                        g.forAllPropsOnEdge(e, [&](auto p)
+                        g.forPropsOnEdge(e, [&](auto p)
                         {
                             found = p->data == "licked-into-being";
                             return !found;
                         });
                         return !found;
                     });
-                    g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
+                    g.forPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
                     return found;
                 });
 
@@ -563,17 +563,17 @@ TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
                 {
                     // TODO simplify this
                     bool found = false;
-                    g.forAllEdgesOnNode(n, [&](auto e)
+                    g.forEdgesOnNode(n, [&](auto e)
                     {
                         if (e->data != "creator") return true;
-                        g.forAllPropsOnEdge(e, [&](auto p)
+                        g.forPropsOnEdge(e, [&](auto p)
                         {
                             found = p->data == "licked-into-being";
                             return !found;
                         });
                         return !found;
                     });
-                    g.forAllPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
+                    g.forPropsOnNode(n, [&](auto p) { return !(found = p->data == "licked-into-being"); });
                     return found;
                 });
 
