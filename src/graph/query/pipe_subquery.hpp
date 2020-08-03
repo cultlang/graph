@@ -12,7 +12,7 @@
 #include "engine.hpp"
 #include "pipe_vertex.hpp"
 
-namespace graph
+namespace ugly
 {
 
 	/******************************************************************************

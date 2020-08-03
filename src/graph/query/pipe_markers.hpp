@@ -15,7 +15,7 @@
  * - GraphQueryPipeBack (AKA `back`)
  */
 
-namespace graph
+namespace ugly
 {
 
 	/******************************************************************************

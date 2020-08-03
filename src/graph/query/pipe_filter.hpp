@@ -9,7 +9,7 @@
 
 #include "engine.hpp"
 
-namespace graph
+namespace ugly
 {
 
 	/******************************************************************************

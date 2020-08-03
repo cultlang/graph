@@ -38,7 +38,7 @@ namespace nquads
     struct action<subject>
     {
         template< typename Input >
-        static void apply( const Input& in, graph::ReadNTripleFunc& fn, std::vector<std::string>& vec )
+        static void apply( const Input& in, ugly::ReadNTripleFunc& fn, std::vector<std::string>& vec )
         {
             vec[0] = in.string();
         }
@@ -47,7 +47,7 @@ namespace nquads
     struct action<predicate>
     {
         template< typename Input >
-        static void apply( const Input& in, graph::ReadNTripleFunc& fn, std::vector<std::string>& vec )
+        static void apply( const Input& in, ugly::ReadNTripleFunc& fn, std::vector<std::string>& vec )
         {
             vec[1] = in.string();
         }
@@ -56,7 +56,7 @@ namespace nquads
     struct action<object>
     {
         template< typename Input >
-        static void apply( const Input& in, graph::ReadNTripleFunc& fn, std::vector<std::string>& vec )
+        static void apply( const Input& in, ugly::ReadNTripleFunc& fn, std::vector<std::string>& vec )
         {
             vec[2] = in.string();
         }
@@ -66,14 +66,14 @@ namespace nquads
     struct action<statement>
     {
         template< typename Input >
-        static void apply( const Input& in, graph::ReadNTripleFunc& fn, std::vector<std::string>& vec )
+        static void apply( const Input& in, ugly::ReadNTripleFunc& fn, std::vector<std::string>& vec )
         {
             fn(vec[0], vec[1], vec[2], nullptr);
         }
     };
 }
 
-namespace graph
+namespace ugly
 {
     bool read_nt(std::istream& in, ReadNTripleFunc func)
     {

@@ -10,11 +10,11 @@
 
 #include <string>
 
-using namespace graph;
+using namespace ugly;
 using namespace Catch::Matchers;
 
 
-TEST_CASE( "graph::findNode", "[graph::findNode]" )
+TEST_CASE( "ugly::findNode", "[ugly::findNode]" )
 {
     test_help::StrGraph g;
 

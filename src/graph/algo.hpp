@@ -19,7 +19,7 @@
  * - copyGraph (TODO)
  */
 
-namespace graph
+namespace ugly
 {
     template<typename TGraph>
     bool edgeIsIncoming(TGraph const& g, typename TGraph::Node const* n, typename TGraph::Edge const* e)

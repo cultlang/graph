@@ -6,7 +6,7 @@
 
 #include "filters.hpp"
 
-namespace graph {
+namespace ugly {
 namespace filter
 {
     template<typename TValue>

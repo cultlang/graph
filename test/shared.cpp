@@ -4,7 +4,7 @@
 
 #include "shared.h"
 
-using namespace graph;
+using namespace ugly;
 
 void test_help::fillStrGraphWithNorse(test_help::StrGraph & g)
 {

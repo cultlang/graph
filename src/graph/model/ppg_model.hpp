@@ -11,7 +11,7 @@
 #include "graph/util.hpp"
 #include "graph/storage/storage.h"
 
-namespace graph {
+namespace ugly {
 namespace model
 {
     template <typename TConfig>

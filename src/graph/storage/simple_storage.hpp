@@ -10,7 +10,7 @@
 
 #include "graph/util.hpp"
 
-namespace graph {
+namespace ugly {
 namespace storage
 {
     class SimpleStorage

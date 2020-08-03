@@ -7,7 +7,7 @@
 #include <iostream>
 #include <functional>
 
-namespace graph
+namespace ugly
 {
     typedef std::function< void (std::string&, std::string&, std::string&, std::string*) > ReadNTripleFunc;
 

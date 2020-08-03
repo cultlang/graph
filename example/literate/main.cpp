@@ -24,11 +24,11 @@
  * abstract base type could be used, or one of the mixins that provides better support for diverse
  * types.
  */
-using StrGraphConfig = graph::model::ConfigBuilder<
-    graph::model::DataCoreConfigBuilder<std::string, std::string>,
-    graph::model::StorageConfigBuilder<graph::storage::SimpleStorage>
+using StrGraphConfig = ugly::model::ConfigBuilder<
+    ugly::model::DataCoreConfigBuilder<std::string, std::string>,
+    ugly::model::StorageConfigBuilder<ugly::storage::SimpleStorage>
 >;
-using StrGraph = graph::model::PathPropertyGraph< StrGraphConfig >;
+using StrGraph = ugly::model::PathPropertyGraph< StrGraphConfig >;
 
 /* TODO For a more complex example we will create a simple tagged record and use it as part of a typed
  * graph. The design of our data model allows for an arbitrary number of orthoganol mixins, though
@@ -54,15 +54,15 @@ int main(int argc, char** argv)
     size_t entry_count = 0;
     try
     {
-        graph::read_nt(file, 
+        ugly::read_nt(file, 
             [&] (auto subject, auto predicate, auto object, auto label)
             {
-                auto s = graph::requireNode(g, subject);
-                auto o = graph::requireNode(g, object);
+                auto s = ugly::requireNode(g, subject);
+                auto o = ugly::requireNode(g, object);
                 auto p = g.addEdge(predicate, { s, o });
                 if (label != nullptr)
                 {
-                    auto l = graph::requireLabel(g, *label);
+                    auto l = ugly::requireLabel(g, *label);
                     //g.attachLabel(, l);
                 }
                 entry_count++;
@@ -81,10 +81,10 @@ int main(int argc, char** argv)
    
     try
     {
-        auto thor = graph::findNode(g, "thor");
+        auto thor = ugly::findNode(g, "thor");
 
         // thor's parents and grandparents
-        auto r_thorsParentsAndGrandparents = graph::query(&g)
+        auto r_thorsParentsAndGrandparents = ugly::query(&g)
             .v(thor)
             .out( [](auto n, auto e) { return e->data == "parents"; } )
             .as("parent")
@@ -97,8 +97,8 @@ int main(int argc, char** argv)
         std::cout << fmt::format("Thor's parents and grand-parents: {0}.", r_thorsParentsAndGrandparents[0]->data) << std::endl;
 
         // thor is related to someone licked into being
-        auto r_thorsWeirdCousin = graph::query(&g)
-            .v(graph::findNode(g, "thor"))
+        auto r_thorsWeirdCousin = ugly::query(&g)
+            .v(ugly::findNode(g, "thor"))
             .repeat_breadth(
                 [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
                 [&](auto n) { return true; },

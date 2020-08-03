@@ -10,7 +10,7 @@
 
 #include "../util.hpp"
 
-namespace graph {
+namespace ugly {
 namespace model
 {
     struct Empty { };

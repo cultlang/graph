@@ -8,10 +8,10 @@
 
 #include "shared.h"
 
-using namespace graph;
+using namespace ugly;
 using namespace Catch::Matchers;
 
-TEST_CASE( "::graph::model::PathPropertyGraph basic initialization, adding, and counts", "[graph::model::PathPropertyGraph]" )
+TEST_CASE( "::ugly::model::PathPropertyGraph basic initialization, adding, and counts", "[ugly::model::PathPropertyGraph]" )
 {
     test_help::StrGraph g;
 
@@ -121,7 +121,7 @@ TEST_CASE( "::graph::model::PathPropertyGraph basic initialization, adding, and 
 
 
 
-TEST_CASE( "::graph::model::PathPropertyGraph inspection", "[graph::model::PathPropertyGraph]" )
+TEST_CASE( "::ugly::model::PathPropertyGraph inspection", "[ugly::model::PathPropertyGraph]" )
 {
     test_help::StrGraph g;
 
@@ -260,7 +260,7 @@ TEST_CASE( "::graph::model::PathPropertyGraph inspection", "[graph::model::PathP
 
 
 
-TEST_CASE( "::graph::model::PathPropertyGraph updates", "[graph::model::PathPropertyGraph]" )
+TEST_CASE( "::ugly::model::PathPropertyGraph updates", "[ugly::model::PathPropertyGraph]" )
 {
     test_help::StrGraph g;
 

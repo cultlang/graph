@@ -15,11 +15,11 @@
 
 namespace test_help
 {
-    using StrGraphConfig = graph::model::ConfigBuilder<
-        graph::model::DataCoreConfigBuilder<std::string, std::string>,
-        graph::model::StorageConfigBuilder<graph::storage::SimpleStorage>
+    using StrGraphConfig = ugly::model::ConfigBuilder<
+        ugly::model::DataCoreConfigBuilder<std::string, std::string>,
+        ugly::model::StorageConfigBuilder<ugly::storage::SimpleStorage>
     >;
-    using StrGraph = graph::model::PathPropertyGraph< StrGraphConfig >;
+    using StrGraph = ugly::model::PathPropertyGraph< StrGraphConfig >;
 
     void fillStrGraphWithNorse(StrGraph & g);
 }

@@ -99,8 +99,8 @@ void Semantics::addEdge(std::shared_ptr<StrGraph> g, std::shared_ptr<ParseTree> 
         throw stdext::exception("Expected arguments of form (nodeFrom, nodeTo, edge");
     }
 
-    auto from = graph::findNode(*g, args[0]);
-    auto to = graph::findNode(*g, args[1]);
+    auto from = ugly::findNode(*g, args[0]);
+    auto to = ugly::findNode(*g, args[1]);
     if(!from) throw stdext::exception("From Node Does not exist");
     if(!to) throw stdext::exception("To Node Does not exist");
     

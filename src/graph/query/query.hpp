@@ -6,7 +6,7 @@
 
 #include "engine.hpp"
 
-namespace graph
+namespace ugly
 {
     template<typename TGraph, typename TQueryFinal>
     class GraphQueryLibraryBase

@@ -8,7 +8,7 @@
 #include "stdext/exception.h"
 #include "stdext/introspection.hpp"
 
-namespace graph
+namespace ugly
 {
     class graph_error
         : public std::runtime_error

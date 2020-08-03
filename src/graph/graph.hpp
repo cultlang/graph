@@ -35,7 +35,7 @@
 #include "query/query.hpp"
 #include "query/query_library_core.hpp"
 
-namespace graph
+namespace ugly
 {
     template<typename TGraph, template <typename, typename> typename TGraphQueryLibrary = GraphQueryLibraryCore>
     GraphQuery<TGraph, TGraphQueryLibrary> query(TGraph* g)

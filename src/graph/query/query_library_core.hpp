@@ -17,7 +17,7 @@
 #include "pipe_markers.hpp"
 #include "pipe_subquery.hpp"
 
-namespace graph
+namespace ugly
 {
     template<typename TGraph, typename TQueryFinal>
     class GraphQueryLibraryCore

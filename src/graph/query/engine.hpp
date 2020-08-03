@@ -21,7 +21,7 @@
  *   - Including interpreter
  */
 
-namespace graph
+namespace ugly
 {
     template<typename TGraph>
     using GraphVariant = std::variant<

@@ -21,11 +21,11 @@ namespace semantics {
 
 
     class Semantics {
-        using StrGraphConfig = graph::model::ConfigBuilder<
-            graph::model::DataCoreConfigBuilder<std::string, std::string>,
-            graph::model::StorageConfigBuilder<graph::storage::SimpleStorage>
+        using StrGraphConfig = ugly::model::ConfigBuilder<
+            ugly::model::DataCoreConfigBuilder<std::string, std::string>,
+            ugly::model::StorageConfigBuilder<ugly::storage::SimpleStorage>
         >;
-        using StrGraph = graph::model::PathPropertyGraph< StrGraphConfig >;
+        using StrGraph = ugly::model::PathPropertyGraph< StrGraphConfig >;
 
         using res_type = std::vector<StrGraph::Node*>;
         std::map<std::string, std::shared_ptr<StrGraph>> _graphs;

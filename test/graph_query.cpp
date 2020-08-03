@@ -11,17 +11,17 @@
 #include <string>
 #include <iostream>
 
-using namespace graph;
+using namespace ugly;
 using namespace Catch::Matchers;
 
 
-TEST_CASE( "graph::query() basics", "[graph::GraphQuery]" )
+TEST_CASE( "ugly::query() basics", "[ugly::GraphQuery]" )
 {
     test_help::StrGraph g;
 
     test_help::fillStrGraphWithNorse(g);
 
-    SECTION( "graph::query() returns working query object" )
+    SECTION( "ugly::query() returns working query object" )
     {
         auto q = query(&g);
 
@@ -170,7 +170,7 @@ TEST_CASE( "graph::query() basics", "[graph::GraphQuery]" )
 }
 
 
-TEST_CASE( "graph::query() syntax traversal queries", "[graph::GraphQuery]" )
+TEST_CASE( "ugly::query() syntax traversal queries", "[ugly::GraphQuery]" )
 {
     test_help::StrGraph g;
 
@@ -333,7 +333,7 @@ TEST_CASE( "graph::query() syntax traversal queries", "[graph::GraphQuery]" )
     }
 }
 
-TEST_CASE( "graph::query() syntax label queries", "[graph::GraphQuery]" )
+TEST_CASE( "ugly::query() syntax label queries", "[ugly::GraphQuery]" )
 {
     test_help::StrGraph g;
 
@@ -410,7 +410,7 @@ TEST_CASE( "graph::query() syntax label queries", "[graph::GraphQuery]" )
 }
 
 
-TEST_CASE( "graph::query() sub-queries", "[graph::GraphQuery]" )
+TEST_CASE( "ugly::query() sub-queries", "[ugly::GraphQuery]" )
 {
     test_help::StrGraph g;
 

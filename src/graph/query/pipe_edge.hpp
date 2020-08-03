@@ -10,7 +10,7 @@
 
 #include "engine.hpp"
 
-namespace graph
+namespace ugly
 {
 
     enum class GraphQueryPipeEdgesEnum

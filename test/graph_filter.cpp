@@ -11,11 +11,11 @@
 #include <string>
 #include <iostream>
 
-using namespace graph;
-namespace f = graph::filter;
+using namespace ugly;
+namespace f = ugly::filter;
 using namespace Catch::Matchers;
 
-TEST_CASE( "graph filter basics", "[graph::filters]" )
+TEST_CASE( "graph filter basics", "[ugly::filters]" )
 {
     test_help::StrGraph g;
 
@@ -24,7 +24,7 @@ TEST_CASE( "graph filter basics", "[graph::filters]" )
 }
 
 
-TEST_CASE( "graph filters usable in graph::query() builders", "[graph::filters]" )
+TEST_CASE( "graph filters usable in ugly::query() builders", "[ugly::filters]" )
 {
     test_help::StrGraph g;
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-namespace graph {
+namespace ugly {
 namespace filter
 {
     template<typename TGraph, typename TType>
