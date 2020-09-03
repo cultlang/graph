@@ -21,9 +21,8 @@ jobs:
       - name: Build Project
         run: |
           cd $env:GITHUB_WORKSPACE
-          bazel build :ugly-tests
+          bazel test ... --test_output=errors --enable_runfiles
           bazel build :uglycli
-          bazel-bin\ugly-tests
   
   buildlinux:
     # The type of runner that the job will run on
@@ -37,13 +36,9 @@ jobs:
       - name: Build Project
         run: |
           cd $GITHUB_WORKSPACE
-          bazel build :ugly-tests
+          bazel test ... --test_output=errors
           bazel build :uglycli
-          ./bazel-bin/ugly-tests
-          mkdir bazel-bin/ugly
-          mv bazel-bin/uglycli bazel-bin/ugly
-          cp -R src bazel-bin/ugly/include
-          tar -czf bazel/bin/ugly$GITHUB_SHA.tar.gz bazel-bin/ugly
+          tar -czf bazel-bin/ugly$GITHUB_SHA.tar.gz bazel-bin/uglycli
       - uses: actions/upload-artifact@v2
         with:
           name: ugly-linux-amd64
