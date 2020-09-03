@@ -86,7 +86,7 @@ namespace ugly
     public:
         inline GraphQueryPipeOptional(std::shared_ptr<PipeLineDescription> pipeline)
             : Base(pipeline)
-            , _state(_pipeline)
+            , _state(pipeline)
             , _gremlin()
         { }
 
@@ -196,7 +196,7 @@ namespace ugly
             : Base(pipeline)
             , _func_repeat(func_repeat)
             , _func_emit(nullptr)
-            , _state(_pipeline)
+            , _state(pipeline)
             , _gremlins()
         { }
 
@@ -204,7 +204,7 @@ namespace ugly
             : Base(pipeline)
             , _func_repeat(func_repeat)
             , _func_emit(func_emit)
-            , _state(_pipeline)
+            , _state(pipeline)
             , _gremlins()
         { }
 

@@ -41,7 +41,7 @@ namespace ugly
         class Gremlin
         {
         public:
-            typename GraphVariant<TGraph> graphObject;
+            GraphVariant<TGraph> graphObject;
 
             std::map<size_t, typename TGraph::Node const*> marks;
 
@@ -64,6 +64,12 @@ namespace ugly
             }
         };
 
+        class PipeDescription;
+        class PipeState;
+        class Pipe;
+        class PipeLineDescription;
+        class PipeLineState;
+
         enum class PipeResultEnum
         {
             Done,
@@ -71,7 +77,7 @@ namespace ugly
         };
 
         using PipeResult = std::variant<PipeResultEnum, std::shared_ptr<Gremlin>>;
-
+        
         class PipeDescription
         {
         protected:
@@ -81,7 +87,7 @@ namespace ugly
             virtual ~PipeDescription() = default;
 
         protected:
-            virtual class PipeState* init() const = 0;
+            inline virtual class PipeState* init() const = 0;
             virtual std::vector<std::shared_ptr<class PipeLine>> getSubPipelines() const = 0;
         };
 

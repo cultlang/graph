@@ -13,7 +13,7 @@ namespace filter
     struct ValueFilterGeneric
     {
     protected:
-        typename TValue _value;
+        TValue _value;
 
         template<typename TGraph>
         friend struct ValueFilterSpecialized;
@@ -54,7 +54,7 @@ namespace filter
     };
 
     template<typename TType>
-    typename ValueFilterGeneric<TType> byValue(TType && v)
+    ValueFilterGeneric<TType> byValue(TType && v)
     {
         return ValueFilterGeneric<TType>(std::forward<TType>(v));
     }

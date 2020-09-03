@@ -26,3 +26,4 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           bazel build :test
+          ./bazel-bin/test

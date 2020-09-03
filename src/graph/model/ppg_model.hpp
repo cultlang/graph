@@ -91,21 +91,21 @@ namespace model
 
         inline PathPropertyGraph()
         {
-            _storage.initPrimaryNodeStore<Node>();
-            _storage.initPrimaryEdgeStore<Edge>();
-            _storage.initPrimaryPathStore<Path>();
-            _storage.initPrimaryLabelStore<Label>();
-            _storage.initPrimaryPropStore<Prop>();
+            _storage.template initPrimaryNodeStore<Node>();
+            _storage.template initPrimaryEdgeStore<Edge>();
+            _storage.template initPrimaryPathStore<Path>();
+            _storage.template initPrimaryLabelStore<Label>();
+            _storage.template initPrimaryPropStore<Prop>();
 
             // TODO: run storage "config" lambda here
         }
     // Count functions
     public:
-        inline size_t nodeCount() const { return _storage.countPrimaryNodeStore<Node>(); }
-        inline size_t edgeCount() const { return _storage.countPrimaryEdgeStore<Edge>(); }
-        inline size_t pathCount() const { return _storage.countPrimaryPathStore<Path>(); }
-        inline size_t labelCount() const { return _storage.countPrimaryLabelStore<Label>(); }
-        inline size_t propCount() const { return _storage.countPrimaryPropStore<Prop>(); }
+        inline size_t nodeCount() const { return _storage.template countPrimaryNodeStore<Node>(); }
+        inline size_t edgeCount() const { return _storage.template countPrimaryEdgeStore<Edge>(); }
+        inline size_t pathCount() const { return _storage.template countPrimaryPathStore<Path>(); }
+        inline size_t labelCount() const { return _storage.template countPrimaryLabelStore<Label>(); }
+        inline size_t propCount() const { return _storage.template countPrimaryPropStore<Prop>(); }
 
     // Introspection functions
     public:
@@ -118,14 +118,14 @@ namespace model
     public:
         inline Label* addLabel(LabelData const& data)
         {
-            Label* ref = _storage.makeLabel<Label>(data);
+            Label* ref = _storage.template makeLabel<Label>(data);
 
             return ref;
         }
 
         inline Node* addNode(NodeData const& data)
         {
-            Node* ref = _storage.makeNode<Node>(data);
+            Node* ref = _storage.template makeNode<Node>(data);
 
             return ref;
         }
@@ -137,7 +137,7 @@ namespace model
             if (nodes_size < 2)
                 throw graph_error("Edges must connect at least two nodes.");
 
-            Edge* ref = _storage.makeEdge<Edge>(data);
+            Edge* ref = _storage.template makeEdge<Edge>(data);
             ref->inverted = invert;
 
             _storage.setEdgeListOfNodes(
@@ -150,7 +150,7 @@ namespace model
         
         inline Prop* addProp(PropData const& data, Node* on_node)
         {
-            Prop* ref = _storage.makeProp<Prop>(data);
+            Prop* ref = _storage.template makeProp<Prop>(data);
 
             _storage.attachNodeProp(
                 on_node, on_node->store,
@@ -162,7 +162,7 @@ namespace model
 
         inline Prop* addProp(PropData const& data, Edge* on_edge)
         {
-            Prop* ref = _storage.makeProp<Prop>(data);
+            Prop* ref = _storage.template makeProp<Prop>(data);
 
             _storage.attachEdgeProp(
                 on_edge, on_edge->store,
@@ -177,7 +177,7 @@ namespace model
         template<typename Func>
         inline void forAllNodes(Func func) const
         {
-            for (auto node_it = _storage.allNodesBegin<Node>(); node_it != _storage.allNodesEnd<Node>(); ++node_it)
+            for (auto node_it = _storage.template allNodesBegin<Node>(); node_it != _storage.template allNodesEnd<Node>(); ++node_it)
             {
                 if (!_detail::invoke_return_bool_or_true(func, (Node const*)&*node_it))
                     break;
@@ -187,7 +187,7 @@ namespace model
         template<typename Func>
         inline void forAllLabels(Func func) const
         {
-            for (auto label_it = _storage.allLabelsBegin<Label>(); label_it != _storage.allLabelsEnd<Label>(); ++label_it)
+            for (auto label_it = _storage.template allLabelsBegin<Label>(); label_it != _storage.template allLabelsEnd<Label>(); ++label_it)
             {
                 if (!_detail::invoke_return_bool_or_true(func, (Label const*)&*label_it))
                     break;
@@ -199,7 +199,7 @@ namespace model
         template<typename Func>
         inline void forEdgesOnNode(Node const* node, Func func) const
         {
-            auto list = _storage.getNodeListOfEdges<Edge>(node, node->store);
+            auto list = _storage.template getNodeListOfEdges<Edge>(node, node->store);
 
             for (auto edge_it = list.begin(); edge_it != list.end(); ++edge_it)
             {
@@ -211,7 +211,7 @@ namespace model
         template<typename Func>
         inline void forNodesInEdge(Edge const* edge, Func func) const
         {
-            auto list = _storage.getEdgeListOfNodes<Node>(edge, edge->store);
+            auto list = _storage.template getEdgeListOfNodes<Node>(edge, edge->store);
 
             for (auto node_it = list.begin(); node_it != list.end(); ++node_it)
             {
@@ -223,7 +223,7 @@ namespace model
         template<typename Func>
         inline void forPropsOnNode(Node const* node, Func func) const
         {
-            auto list = _storage.getNodeListOfProps<Prop>(node, node->store);
+            auto list = _storage.template getNodeListOfProps<Prop>(node, node->store);
 
             for (auto prop_it = list.begin(); prop_it != list.end(); ++prop_it)
             {
@@ -235,7 +235,7 @@ namespace model
         template<typename Func>
         inline void forPropsOnEdge(Edge const* edge, Func func) const
         {
-            auto list = _storage.getEdgeListOfProps<Prop>(edge, edge->store);
+            auto list = _storage.template getEdgeListOfProps<Prop>(edge, edge->store);
 
             for (auto prop_it = list.begin(); prop_it != list.end(); ++prop_it)
             {
@@ -256,7 +256,7 @@ namespace model
 
         inline void attachEdge(Node* node, Edge* edge)
         {
-            auto list = _storage.getEdgeListOfNodes<Node>(edge, edge->store);
+            auto list = _storage.template getEdgeListOfNodes<Node>(edge, edge->store);
 
             list.insert(list.end(), node);
 
@@ -268,7 +268,7 @@ namespace model
 
         inline void attachEdge(Node* node, Edge* edge, size_t index)
         {
-            auto list = _storage.getEdgeListOfNodes<Node>(edge, edge->store);
+            auto list = _storage.template getEdgeListOfNodes<Node>(edge, edge->store);
 
             if (index > list.size())
                 throw graph_error("Argument `index` out of range.");
@@ -285,7 +285,7 @@ namespace model
     public:
         inline int indexOfNodeInEdge(Node const* node, Edge const* edge) const
         {
-            auto list = _storage.getEdgeListOfNodes<Node>(edge, edge->store);
+            auto list = _storage.template getEdgeListOfNodes<Node>(edge, edge->store);
             auto list_begin = list.begin();
             auto list_end = list.end();
 

@@ -18,7 +18,7 @@ namespace ugly
         virtual void appendPipes(std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> pipe_desc) = 0;
 
         virtual TQueryFinal newQueryPipeline() = 0;
-        virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> extractPipeline(TQueryFinal& other) = 0;
+        virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> extractPipeline(TQueryFinal const& other) = 0;
     };
 
     template<typename TGraph, template <typename, typename> typename TGraphQueryLibrary> 
@@ -56,7 +56,7 @@ namespace ugly
         {
             return GraphQuery(_engine);
         }
-        inline virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> extractPipeline(GraphQuery& query)
+        inline virtual std::shared_ptr<typename GraphQueryEngine<TGraph>::PipeLineDescription> extractPipeline(GraphQuery const& query)
         {
             return query._pipeline;
         }

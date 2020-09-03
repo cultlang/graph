@@ -26,7 +26,7 @@ namespace filter
     };
 
     template<bool TConstant>
-    typename ConstantFilterGeneric<TConstant> constant()
+    ConstantFilterGeneric<TConstant> constant()
     {
         return ConstantFilterGeneric<TConstant>();
     }
