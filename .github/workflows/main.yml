@@ -13,7 +13,19 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  buildwindows:
+    runs-on: 'windows-latest'
+    steps:
+      - uses: actions/checkout@v2
+      # Runs a set of commands using the runners shell
+      - name: Build Project
+        run: |
+          cd $env:GITHUB_WORKSPACE
+          bazel build :ugly-tests
+          bazel build :uglycli
+          bazel-bin\ugly-tests
+  
+  buildlinux:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     container: ghcr.io/cultlang/buildbox:1.0
@@ -25,5 +37,15 @@ jobs:
       - name: Build Project
         run: |
           cd $GITHUB_WORKSPACE
-          bazel build :test
-          ./bazel-bin/test
+          bazel build :ugly-tests
+          bazel build :uglycli
+          ./bazel-bin/ugly-tests
+          mkdir bazel-bin/ugly
+          mv bazel-bin/uglycli bazel-bin/ugly
+          cp -R src bazel-bin/ugly/include
+          tar -czf bazel/bin/ugly$GITHUB_SHA.tar.gz bazel-bin/ugly
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ugly-linux-amd64
+          path: $GITHUB_WORKSPACE/bazel-bin/ugly$GITHUB_SHA.tar.gz
+          

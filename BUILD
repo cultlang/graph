@@ -22,7 +22,7 @@ cc_library(
 )
 
 cc_library(
-    name="code",
+    name="ugly",
     visibility = ["//visibility:public"],
     srcs=glob([
         "src/**/*.c*"
@@ -38,7 +38,7 @@ cc_library(
 )
 
 cc_test(
-    name = "test",
+    name = "ugly-tests",
     srcs = glob([
         "test/**/*.h*", 
         "test/**/*.cpp"
@@ -48,7 +48,7 @@ cc_test(
         "//conditions:default": ["-std=c++17"],
     }),
     deps = [
-        ":code",
+        ":ugly",
         "@cultlang_stdext//:code",
         "@catch//:single_include",
     ],
@@ -68,14 +68,14 @@ cc_test(
         "//conditions:default": ["-std=c++17"],
     }),
     deps = [
-        ":code",
+        ":ugly",
         "@cultlang_stdext//:code",
         "@fmt//:fmt"
     ],
 )
 
 cc_binary(
-    name = "cli",
+    name = "uglycli",
     srcs = glob([
         "cli/**/*.h*", 
         "cli/**/*.cpp"
@@ -85,7 +85,7 @@ cc_binary(
         "//conditions:default": ["-std=c++17"],
     }),
     deps = [
-        ":code",
+        ":ugly",
         "@cultlang_stdext//:code",
         "@fmt//:fmt",
         "@replxx//:replxx",
