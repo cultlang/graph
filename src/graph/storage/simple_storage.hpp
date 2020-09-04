@@ -16,34 +16,78 @@ namespace storage
     class SimpleStorage
     {
     public:
-        struct PerNode
-        {
-            std::vector<void*> _props;
+        struct PerNode;
+        struct PerEdge;
+        struct PerPath;
+        struct PerLabel;
+        struct PerProp;
 
-            std::vector<void*> _edges;
+        struct PerBase
+        {
+        private:
+            friend class SimpleStorage;
+
+            void* _actual;
+
+        protected:
+            void init(void* v)
+            {
+                _actual = v;
+            }
+        };
+
+        struct PerBaseProped
+            : public PerBase
+        {
+        private:
+            friend class SimpleStorage;
+
+            std::vector<PerProp*> _props;
+        };
+
+        struct PerNode
+            : public PerBaseProped
+        {
+        private:
+            friend class SimpleStorage;
+
+            std::vector<PerEdge*> _edges;
+            std::vector<PerLabel*> _labels;
         };
 
         struct PerEdge
+            : public PerBaseProped
         {
-            std::vector<void*> _props;
+        private:
+            friend class SimpleStorage;
 
-            std::vector<void*> _nodes;
+            std::vector<PerNode*> _nodes;
         };
 
         struct PerPath
+            : public PerBase
         {
+        private:
+            friend class SimpleStorage;
 
         };
 
         struct PerLabel
+            : public PerBase
         {
+        private:
+            friend class SimpleStorage;
 
+            std::vector<PerNode*> _nodes;
         };
 
         struct PerProp
+            : public PerBase
         {
-            void* _parent;
+        private:
+            friend class SimpleStorage;
 
+            PerBaseProped* _parent;
         };
 
     protected:
@@ -148,12 +192,14 @@ namespace storage
 
     // make*
     public:
-        template<typename Node, typename Data>
-        inline Node* makeNode(Data const& data)
+        template<typename Node, typename Data, typename PerGetter>
+        inline Node* makeNode(Data const& data, PerGetter getter)
         {
             Node& ref = _nodes.get<Node>()->emplace_back(data, PerNode());
+            Node* ptr = &ref;
+            getter()
 
-            return &ref;
+            return;
         }
         template<typename Edge, typename Data>
         inline Edge* makeEdge(Data const& data)
@@ -210,6 +256,18 @@ namespace storage
 
     // relations getting
     public:
+        template<typename Label, typename Node>
+        inline std::vector<Label const*> getNodeListOfLabels(Node const* ref, PerNode const& per) const
+        {
+            std::vector<Label const*> list;
+            list.reserve(per._labels.size());
+
+            std::transform(per._labels.begin(), per._labels.end(), std::back_inserter(list),
+                [](void* vp) { return (Label const*)vp; });
+
+            return list;
+        }
+
         template<typename Node, typename Edge>
         inline std::vector<Node const*> getEdgeListOfNodes(Edge const* ref, PerEdge const& per) const
         {
@@ -217,7 +275,7 @@ namespace storage
             list.reserve(per._nodes.size());
 
             std::transform(per._nodes.begin(), per._nodes.end(), std::back_inserter(list),
-                [](void* p) { return (Node const*)p; });
+                [](void* vp) { return (Node const*)vp; });
 
             return list;
         }
@@ -229,7 +287,7 @@ namespace storage
             list.reserve(per._edges.size());
 
             std::transform(per._edges.begin(), per._edges.end(), std::back_inserter(list),
-                [](void* p) { return (Edge const*)p; });
+                [](void* vp) { return (Edge const*)vp; });
 
             return list;
         }
@@ -241,7 +299,7 @@ namespace storage
             list.reserve(per._props.size());
 
             std::transform(per._props.begin(), per._props.end(), std::back_inserter(list),
-                [](void* p) { return (Prop const*)p; });
+                [](void* vp) { return (Prop const*)p; });
 
             return list;
         }
@@ -253,30 +311,54 @@ namespace storage
             list.reserve(per._props.size());
 
             std::transform(per._props.begin(), per._props.end(), std::back_inserter(list),
-                [](void* p) { return (Prop const*)p; });
+                [](void* vp) { return (Prop const*)vp; });
 
             return list;
         }
 
     // relations setting
     public:
-        template<typename Edge, typename NodeIt, typename NodeGetter>
+        template<typename Edge, typename Node, typename NodeIt, typename NodeGetter>
         inline void setEdgeListOfNodes(Edge const* edge, PerEdge const& edge_per, NodeIt begin, NodeIt end, NodeGetter getter)
         {
             // TODO lock
-
+            void* edge_vp = (void*)edge;
             auto& edge_per_mut = const_cast<PerEdge&>(edge_per);
-            // TODO remove from old nodes
+            auto old_list = edge_per_mut._nodes;
+
+            // Build the new list, add it to the new nodes.
             edge_per_mut._nodes.clear();
             for (auto it = begin; it != end; ++it)
             {
-                auto const* node = *it;
+                Node const* node = *it;
+                void* node_vp = (void*)node;
                 auto& node_per_mut = const_cast<PerNode&>(*getter(node));
 
-                node_per_mut._edges.push_back((void*)edge);
-                edge_per_mut._nodes.push_back((void*)node);
+                // Add the edge to the node, or if it already has the edge, remove it from the old list
+                auto old_it = std::find(old_list.begin(), old_list.end(), node_vp);
+                if (old_it == old_list.end())
+                {
+                    node_per_mut._edges.push_back(edge_vp);
+                }
+                else
+                {
+                    old_list.erase(old_it);
+                }
+
+                edge_per_mut._nodes.push_back(node_vp);
             }
 
+            // Remove it from the old nodes
+            for (auto it = old_list.begin(); it != old_list.end(); ++it)
+            {
+                void* node_vp = *it;
+                Node const* node = (Node const*)node_vp;
+                auto& node_per_mut = const_cast<PerNode&>(*getter(node));
+
+                node_per_mut._edges.erase(
+                    std::remove(node_per_mut._edges.begin(), node_per_mut._edges.end(), edge_vp),
+                    node_per_mut._edges.end());
+            }
         }
 
         template<typename Node, typename Prop>
@@ -304,6 +386,11 @@ namespace storage
 
             if (prop_per_mut._parent != nullptr)
             {
+                if (prop_per_mut._parent == (void*)edge)
+                {
+
+                }
+
                 // TODO remove from old parent
             }
 
@@ -312,9 +399,16 @@ namespace storage
         }
 
         template<typename Node, typename Label>
-        inline void attachNodeLabel(Node const* ref, PerNode const& per, Label const* label_ref, PerLabel const& label_per)
+        inline void attachNodeLabel(Node const* node, PerNode const& node_per, Label const* label, PerLabel const& label_per)
         {
-            
+            // TODO lock
+            auto& node_per_mut = const_cast<PerNode&>(node_per);
+            auto& label_per_mut = const_cast<PerLabel&>(label_per);
+
+            // TODO except if already added
+
+            node_per_mut._labels.push_back((void*)label);
+            prop_per_mut._parent = (void*)edge;
         }
     };
 }}

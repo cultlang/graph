@@ -129,6 +129,18 @@ namespace model
 
             return ref;
         }
+
+        inline Node* addNode(NodeData const& data, std::vector<Label const*> const& labels)
+        {
+            Node* ref = _storage.template makeNode<Node>(data);
+
+            for (auto label : labels)
+            {
+                _storage.attachNodeLabel(ref, ref->store, label, label->store);
+            }
+
+            return ref;
+        }
         
         // By default edges point from 0-index to all others
         inline Edge* addEdge(EdgeData const& data, std::vector<Node const*> const& nodes, bool invert = false)
@@ -140,7 +152,7 @@ namespace model
             Edge* ref = _storage.template makeEdge<Edge>(data);
             ref->inverted = invert;
 
-            _storage.setEdgeListOfNodes(
+            _storage.template setEdgeListOfNodes<Edge, Node>(
                 ref, ref->store,
                 nodes.begin(), nodes.end(), [](Node const* n){ return &n->store; }
             );
@@ -196,6 +208,18 @@ namespace model
 
     // Iterate on functions
     public:
+        template<typename Func>
+        inline void forLabelsOnNode(Node const* node, Func func) const
+        {
+            auto list = _storage.template getNodeListOfLabels<Label>(node, node->store);
+
+            for (auto edge_it = list.begin(); edge_it != list.end(); ++edge_it)
+            {
+                if (!_detail::invoke_return_bool_or_true(func, (Edge const*)*edge_it))
+                    break;
+            }
+        }
+
         template<typename Func>
         inline void forEdgesOnNode(Node const* node, Func func) const
         {
@@ -260,7 +284,7 @@ namespace model
 
             list.insert(list.end(), node);
 
-            _storage.setEdgeListOfNodes(
+            _storage.setEdgeListOfNodes<Edge, Node>(
                 edge, edge->store,
                 list.begin(), list.end(), [](Node const* n){ return &n->store; }
             );
@@ -275,7 +299,7 @@ namespace model
 
             list.insert(list.begin() + index, node);
             
-            _storage.setEdgeListOfNodes(
+            _storage.setEdgeListOfNodes<Edge, Node>(
                 edge, edge->store,
                 list.begin(), list.end(), [](Node const* n){ return &n->store; }
             );
@@ -305,5 +329,43 @@ namespace model
             
             return res;
         }
+
+    // Detach functions
+    public:
+        inline void detachLabel(Node* node, Label* label)
+        {
+
+        }
+
+        inline void detachEdge(Node* node, Edge* edge)
+        {
+            auto list = _storage.template getEdgeListOfNodes<Node>(edge, edge->store);
+
+            list.insert(list.end(), node);
+
+            _storage.setEdgeListOfNodes<Edge, Node>(
+                edge, edge->store,
+                list.begin(), list.end(), [](Node const* n){ return &n->store; }
+            );
+        }
+
+        inline void detachEdge(Node* node, Edge* edge, size_t index)
+        {
+            auto list = _storage.template getEdgeListOfNodes<Node>(edge, edge->store);
+
+            if (index > list.size())
+                throw graph_error("Argument `index` out of range.");
+
+            list.insert(list.begin() + index, node);
+            
+            _storage.setEdgeListOfNodes<Edge, Node>(
+                edge, edge->store,
+                list.begin(), list.end(), [](Node const* n){ return &n->store; }
+            );
+        }
+
+    // Delete functions
+    public:
+
     };
 }}

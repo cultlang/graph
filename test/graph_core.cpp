@@ -40,7 +40,7 @@ TEST_CASE( "::ugly::model::PathPropertyGraph basic initialization, adding, and c
         CHECK(g.propCount() == 0);
     }
 
-    SECTION( "adding an edge (only on nodes), only adds an edge" )
+    SECTION( "adding an edge (on nodes), only adds an edge" )
     {
         auto a = g.addNode("a-node");
         auto b = g.addNode("b-node");
@@ -143,10 +143,31 @@ TEST_CASE( "::ugly::model::PathPropertyGraph inspection", "[ugly::model::PathPro
     REQUIRE(g.edgeCount() == 1);
     REQUIRE(g.propCount() == 3);
 
-    SECTION( "inspect labels on nodes" )
+    SECTION( "inspect labels on nodes (find it / void)" )
     {
-
+        bool found = false;
+        g.forEdgesOnNode(n0, [&](auto e){ if (e0->data == e->data) found = true; });
+        CHECK(found == true);
     }
+    SECTION( "inspect labels on nodes (find it / break)" )
+    {
+        bool found = false;
+        g.forEdgesOnNode(n1, [&](auto e){ if (e0->data == e->data) found = true; return !found; });
+        CHECK(found == true);
+    }
+    SECTION( "inspect labels on nodes (don't find / void)" )
+    {
+        bool found = false;
+        g.forEdgesOnNode(n2, [&](auto e){ if (e0->data == e->data) found = true; });
+        CHECK(found == false);
+    }
+    SECTION( "inspect labels on nodes (don't find / break)" )
+    {
+        bool found = false;
+        g.forEdgesOnNode(n3, [&](auto e){ if (e0->data == e->data) found = true; return !found; });
+        CHECK(found == false);
+    }
+
 
     SECTION( "inspect edges on nodes (find it / void)" )
     {
@@ -260,7 +281,7 @@ TEST_CASE( "::ugly::model::PathPropertyGraph inspection", "[ugly::model::PathPro
 
 
 
-TEST_CASE( "::ugly::model::PathPropertyGraph updates", "[ugly::model::PathPropertyGraph]" )
+TEST_CASE( "::ugly::model::PathPropertyGraph attach/detach", "[ugly::model::PathPropertyGraph]" )
 {
     test_help::StrGraph g;
 
@@ -278,8 +299,14 @@ TEST_CASE( "::ugly::model::PathPropertyGraph updates", "[ugly::model::PathProper
     REQUIRE(g.edgeCount() == 1);
     REQUIRE(g.propCount() == 0);
 
+    bool found = false;
+
     SECTION( "attaching a label to a node" )
     {
+        found = false;
+        g.forLabelsOnNode(n0, [&](auto e){ if (e0->data == e->data) found = true; });
+        CHECK(found == true);
+
         g.attachLabel(n0, l);
     }
 

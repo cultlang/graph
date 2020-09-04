@@ -1,92 +1,83 @@
-The graph library included in this repository is a header only implementation of an in memory graph database. It has some interesting properties (and will soon be split into it's own library).
+The graph library included in this repository is primarily a header only implementation of an in memory graph database (some optional features, notably anything with a parser, require compilation). Some notable features:
 
-1. The data model of the graph is composable and extensible. It uses a core template interface of functions and data types. By composing template types more complex data models can be built up.
-2. A library of functors templated off of the graph description allows for creating custom filters and projections for use in iterating over the graph.
-3. The query model of the graph is lazy and composable. It uses an interpreted query structure to allow arbitrary extension and composition of queries. Additionally a tinker-pop-esque syntax is then placed on top of this to provide a native C++ graph query language.
-4. A library of query functions provide extensive power to the query system.
-5. Potential additions which aren't currently planned nor implemented.
+1. The data model of the graph is a composable header only design, allowing you to build your own custom graph-oriented data model.
+    - Comes with a limited selection of already implemented components. Including a `PathPropertyGraph` frontend, and an STL based backend (with optional thread safety).
+    - Implement your own components, allowing for composed extension of the data model. By using a series of template interfaces the library is designed to allow for easy replacement of common portions.
+2. Comes with a "batteries included" query system, including the necessary support utilities (filter functors, partial search functors).
+    - The query system is lazy, allowing for performant queries over arbitrarily large datasets while using very little memory for each query.
+    - The query system is composable, new semantics and syntax can be added relatively easily.
+    - Comes with a C++ native tinker-pop-esque syntax.
+    - Optionally includes a parser for tinker-pop syntax.
+3. Is used to implement a CLI executable in-memory database. Many features can be used with this library.
+    - Common serialization/deserialization formats including n-tuples.
 
 ## 1. Graph Data Model
 
-### Theory
-
-The graph model chosen is robust, it works off of some general axioms, with a couple of assumptions about edge cases.
-
-1. All core graph kinds can have associated data (aka `Core`).
-  * In the case of a typed graph this would include types.
-2. Nodes (a core graph kind) are the primary unit in a graph, and everything revolves around them.
-3. Edges (a core graph kind) join togeather an arbitrary number of nodes.
-4. Edges are directional, pointing **from** (outwards) a primary node **to** (inwards) all the other nodes. The primary node is always at the 0 index. Because edges can involve an arbitrary number of nodes a single node can *point at* many other nodes.
-5. Edges can be inverted, because nodes can involve an arbitrary number of nodes an inverted edge allows a single node to be *pointed at* by many other nodes.
-6. Labels (a core graph kind) can include an arbitrary number of nodes (and a node can have an arbitrary number of labels), this allows the graph to be grouped into categories. One view of labels is that they are a pathological case of an edge that involves many nodes.
-7. Properties (a core graph kind; often shortened to Props) can be placed on a node or an edge as an additional piece of information about that object. Properties may only have a single owner. One view of properties is that they are a pathological pattern of an edge that maps to a node that has no other relationships.
-8. Edges must involve 2 or more nodes (as properties and labels prevent the pathological need for other cases).
-
-Some notable things fall out of this that are worth discussing:
-* Nodes are the focus, we can confirm this by seeing that every core kind involves nodes (and no other kind involves every kind).
-* Edges can't be placed in labels. The authors didn't find this use case to be especially compelling (see patterns for alterntives; can also be corrected with a mixin), it also steps on the toes of adding types to the system.
-  * Props can't be placed in labels for similar reasons.
-  * It is also a step towards homoginizing the model to an interesting extreme that eliminates edges.
-* Labels can't have props. The authors didn't find this use case compelling (see patterns for alterntives; can also be corrected with a mixin).
-  * It is also a step towards homoginizing the model to an extreme that eliminates labels (in favor of simply being edges again).
-* Edges can't join Edges. The authors didn't find this compelling after the arbitrarily sized edges were added (see patterns for alterntives; could theorhetically be fixed wiht a mixin).
-  * It is also a step towards homoginizing the model to an extreme that eliminates nodes.
-
 ### Designing Data Models
 
-Designing a data model for a graph is the hardest part of using a graph library. We have attempted to provide a variety of tools for whatever data model one might be facing, as we describe below.
+Designing a data model for a graph is the hardest part of using a graph system. As this library is meant to be used to build your own graph system for your specific data model this issue is exacerbated.
 
-Designing graph models is complicated in large part because of the variety of options at one's disposal. We describe some thoughts here to solve these conundrums when using our library.
+We have attempted to provide a variety of tools for whatever data model one might be facing, but to use those tools appropriately one must understand the issues involved. Designing graph models is complicated in large part because of the variety of options at one's disposal. We discuss our perspectives on these issues here, primarily by describing various concerns to balance.
 
-#### Concern: Source of Truth vs. Fast to Query
+We list some common design anti-patterns
 
-One common problem that is important to decide early is whether the data model is a source of truth or if it's a fast to query store of information. It could also be somewhere in between but that can be complicated if not well documented.
+#### Concern: Source of Truth vs. Knowledge at Hand
 
-Consider our example Norse Gods dataset. Thor (a node) was born of an affair, he has a `parents` relationship and one of his parents has a `marriage` relationship that does not involve his other parent (to cover our bases we could add properties to each that include his birth date and the marriage's start and end date). But the key question of this concern becomes: how do we know that Thor was born of an affair?
+One common concern that is important to decide early is whether the data model is a source of truth or if its designed to store all relevant knowledge in easy reach. It could also be somewhere in between—where some elements are sources of truth, and others are derived—but that can be complicated if not well documented.
 
-There are two primary options in front of us (besides redesigning the data model to avoid the problem). One option is to query all of the relevant information every time (check if the parents married to each other, check the relevants dates, and so on). The other options is to compute the value and store it in the graph in easy to access locations (store a `was-affair` marker property on the `parents` edge). Either way we will need a method to compute the answer.
+Consider our example Norse Gods dataset. Thor (a node) was born of an affair. The key question this concern leads to is: how do we know that Thor was born of an affair? Specifically, how would our program determine an answer to this question.
 
-* Source of Truth: Rather than allow a stale value to be left in the graph, as the source of truth we would prefer that the database has the minimal set of information required to know something. This means computing the value every time we want to look it up, which while memory effecient is expensive. While more expensive to query, this has benefits for graphs that are updated often, notably taking less time to perform the write and less information to worry about updating.
-* Fast to Query: By storing the value in easy to access locations we have to traverse much less of the graph, and hence have our answer faster. This potentially means storing a lot of extra information, which while computationally efficient, is memory expensive. In general this is better with static graphs, especially if we can compute them from a serialized source of truth.
+Let's consider the graph model as it currently is: Thor has a `parents` relationship which includes both of his parents. One of his parents has a `marriage` relationship that does not involve his other parent. And to cover our bases we could add properties to the `parents` edge that include his birth date and to the `marriage` that include its start and end date.
 
+There are two primary options in front of us. One option is to query all of the relevant information every time (check if the parents are/were married to each other, check the relevant dates of his birth). The other options is to compute the value and store it in the graph in an easy to access location (store a property on the `parents` edge that indicates "was born of an affair").
+
+Either way the value must be calculated, and generally this issue is left to user code through whatever methods are relevant to the user (trigger system, signals, interfaces).
+
+* **Source of Truth**: Rather than allow a stale value to be left in the graph, as the source of truth we would prefer that the database has the minimal set of information required to know something. This means computing the value every time we want to look it up, which while **memory efficient** is **computational expensive**. This has benefits for graphs that are updated often, because ideally only one piece of information must be modified, allowing for **efficient writes** at the cost of **slow queries**.
+* **Knowledge at Hand**: By storing the value in easy to access locations we have to traverse much less of the graph to answer queries, and hence have faster results. This potentially means storing a lot of extra information, which while **computationally efficient**, is **memory expensive**. In general this is better with static graphs, especially if we can compute them from a serialized source of truth, because with this graph model **writes are expensive** and often complicated, at the benefit of **quick queries**.
+* **Hybrid**: Generally one should chose one of the above to use and stick to it. Using a hybrid model often causes the need for **increased documentation** to ensure users and developers know which data needs to be updated in which ways. This can make it **complex to develop** on the resulting model without causing subtle errors and bugs.
+
+#### Concern: Typing
+
+
+
+#### Anti-Pattern: Edge Edges
+
+Wanting to put edges in edges is usually an anti-pattern. This is in fact the classic anti-pattern of graphs.
+
+The solution is obvious in it's simplictly: use a node.
+
+#### Anti-Pattern: Label Properties
+
+Wanting to put properties on labels is usually an anti-pattern. Here are some common motivations and their solutions:
+
+* There are a large number of nodes which share some sort of property, they are currently in a label and we want this property to be findable by all of them. This is usually an indication that there is some hidden structure involved - a common ancestor for example - that should instead be turned into it's own node (which can have properties) and a number of edges.
+* There is an external piece of data that is related to the label that should be accessible through the graph. This solution is simple, then that object (with all of it's properties) should be the *value* of that label. Typed graphs help with this problem.
+* The label needs a representation in the graph it self. In this case one should create a node that represents that label, the value of the label should then be the node. Typed graphs help with this problem.
+
+#### Anti-Pattern: Labeled Properties
+
+Wanting to put properties in labels is usually an anti-pattern.
+
+The primary motivation for this is invariably separating different kinds of properties on the node. There are two solutions to this depending on how one would prefer to separate them (including using both):
+
+* The properties need to be typed, and hence a typed graph should be used.
+* The properties need to be keyed, and hence you should be storing a dictionary of some kind (see: `` for our basic implementation).
+
+#### Anti-Pattern: Labeled Edges
+
+Wanting to put edges in labels is usually an anti-pattern. 
+
+The primary motivation for this is invariably wanting to distinguish between different groups of different edges (often during traversal). Generally speaking, this distinguishment is based on "extra" information about the edge, but it is still often information (e.g. data). There are a couple of recommended solutions:
+
+* Expand the edge data model directly. For example the data stored in the edge could be `parents+affair`, this solution benefits from typed graphs, allowing the type to express what possible variants could be found.
+* Add properties to the edges. This is best for an aspect-esque system where the property's existence gives you more information than it's value. For example adding a `was-affair` property to the edge. In general this implies using keyed or typed properties. This has goes back to the concern of "Source of Truth vs. Fast to Query".
 
 #### Pattern: Marker Property
 
 In an untyped graph a common pattern is to use a "marker" property which marks a specific node or edge as being special in some way. A simple call to the algorithmic helper `hasProp` will find it.
 
 In typed graphs it is generally better to use types to represent this (which then have faster lookups). In keyed graphs it is easier to use a keyed property (with even an empty value) to represent this (which then have faster lookups).
-
-#### Anti-Pattern: Label Properties
-
-Wanting to put properties on labels is usually an anti-pattern. Here are some motivations and their solutions:
-
-* There are a large number of nodes which share some sort of property, they are currently in a label and we want this property to be findable by all of them. This is usually an indication that there is some hidden structure involved - a common ancestor for example - that should instead be turned into it's own node (which can have properties) a number of smaller edges.
-* There is an external piece of data that is related to the label that should be accessible through the graph. This solution is simple, then that object (with all of it's properties) should be the *value* of that label. Typed graphs help with this problem.
-* The lablel really needs a representation in the graph. In this case one can create a special node that represents that label. Using a special type (which gets sorted quickly in typed graphs) or a marker property.
-
-#### Anti-Pattern: Labeled Properties
-
-Wanting to put properties in labels is usually an anti-pattern.
-
-The primary motivation for this is invariably seperating different kinds of properties on the node. There are two solutions to this depending on how one would prefer to seperate them (including using both):
-
-* The properties need to be typed, and hence a typed graph should be used.
-* The properties need to be keyed, and hence a keyed property graph should be used.
-
-#### Anti-Pattern: Labeled Edges
-
-Wanting to put edges in labels is usually an anti-pattern. 
-
-The primary motivation for this is invariably wanting to distinguish between different groups of different edges (often during traversal). Generally speaking, this distinguishment is based on "extra" information about the edge, but it is still often information (e.g. data). For example to express the fact Thor was born of an affair we would want to somehow express that on his `parents` edge relationship. There are a couple of recommended solutions:
-
-* Expand the edge data model directly. For example the data stored in the edge could be `parents+affair`, this solution benefits from typed data, allowing the type to express what possible variants could be found.
-* Add properties to the edges. This is best for an aspect-esque system where the property's existence gives you more information than it's value. For example adding a `was-affair` property to the edge. In general this implies using keyed or typed properties. This has goes back to the concern of "Source of Truth vs. Fast to Query".
-
-#### Anti-Pattern: Edge Edges
-
-Wanting to put edges in edges is usually an anti-pattern.
-
-In general this implies a prety basic solution of creating a new node that represents the edge and splitting the existing edge into two different kinds of edges (plus the third the other edges was meant to represent).
 
 
 ### Graph Data Type Architecture
