@@ -5,6 +5,7 @@
 #pragma once
 
 #include "config.hpp"
+#include "layer/layer.h"
 
 #include "ppg_model.hpp"
 

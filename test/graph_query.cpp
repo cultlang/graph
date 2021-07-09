@@ -14,7 +14,6 @@
 using namespace ugly;
 using namespace Catch::Matchers;
 
-
 TEST_CASE( "ugly::query() basics", "[ugly::GraphQuery]" )
 {
     test_help::StrGraph g;
@@ -23,7 +22,7 @@ TEST_CASE( "ugly::query() basics", "[ugly::GraphQuery]" )
 
     SECTION( "ugly::query() returns working query object" )
     {
-        auto q = query(&g);
+        auto q = make_query(&g);
 
         CHECK(q->getGraph() == &g);
         CHECK(q->getPipeline()->countPipes() == 0);
@@ -35,7 +34,7 @@ TEST_CASE( "ugly::query() basics", "[ugly::GraphQuery]" )
 
     SECTION( "->addPipe() can add GraphQueryPipeEmpty manually" )
     {
-        auto q = query(&g);
+        auto q = make_query(&g);
 
         q->getPipeline()->addPipe(std::make_unique<GraphQueryPipeEmpty<decltype(g)>>());
 
@@ -49,7 +48,7 @@ TEST_CASE( "ugly::query() basics", "[ugly::GraphQuery]" )
 
     SECTION( ".v() can add GraphQueryStepVertex (AKA `v`) with syntax (single node)" )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"));
 
         CHECK(q->getGraph() == &g);
@@ -62,7 +61,7 @@ TEST_CASE( "ugly::query() basics", "[ugly::GraphQuery]" )
 
     SECTION( "run can be called multiple times" )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"));
 
         CHECK(q->getGraph() == &g);
@@ -79,7 +78,7 @@ TEST_CASE( "ugly::query() basics", "[ugly::GraphQuery]" )
 
     SECTION( ".v() can add GraphQueryStepVertex (AKA `v`) with syntax (multiple nodes)" )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(std::vector { findNode(g, "thor"), findNode(g, "odin"), findNode(g, "jord") });
 
         CHECK(q->getGraph() == &g);
@@ -93,7 +92,7 @@ TEST_CASE( "ugly::query() basics", "[ugly::GraphQuery]" )
     SECTION( ".v() can add GraphQueryStepVertex (AKA `v`) with syntax (repeat nodes)" )
     {
         auto thor = findNode(g, "thor");
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(std::vector { thor, thor, thor, thor, thor });
 
         CHECK(q->getGraph() == &g);
@@ -106,7 +105,7 @@ TEST_CASE( "ugly::query() basics", "[ugly::GraphQuery]" )
 
     SECTION( "query can be used as a generator" )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(std::vector { findNode(g, "thor"), findNode(g, "odin") });
 
         CHECK(q->getGraph() == &g);
@@ -145,7 +144,7 @@ TEST_CASE( "ugly::query() basics", "[ugly::GraphQuery]" )
 
     SECTION( "during a generator run, reset must be called to modify" )
     {
-        auto q = query(&g);
+        auto q = make_query(&g);
 
         q->getPipeline()->addPipe(std::make_unique<GraphQueryPipeEmpty<decltype(g)>>());
 
@@ -178,7 +177,7 @@ TEST_CASE( "ugly::query() syntax traversal queries", "[ugly::GraphQuery]" )
 
     SECTION( ".e() can query for specific edges." )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             // same as "out" (mostly)
             .e( [&](auto n, auto e) { return edgeIsOutgoing(g, n, e) && e->data == "parents"; } );
@@ -192,14 +191,14 @@ TEST_CASE( "ugly::query() syntax traversal queries", "[ugly::GraphQuery]" )
 
     SECTION( ".e() can follow edges in a specific way." )
     {
-        auto q_mom = query(&g)
+        auto q_mom = make_query(&g)
             .v(findNode(g, "thor"))
             // same as "out" (mostly)
             .e( [&](auto n, auto e) { return edgeIsOutgoing(g, n, e) && e->data == "parents"; },
                 // mother is in slot 1 (size guard not needed: 2 size edges are guarnteed)
                 [&](auto n, auto e, auto ne) { return g.indexOfNodeInEdge(ne, e) == 1; });
 
-        auto q_dad = query(&g)
+        auto q_dad = make_query(&g)
             .v(findNode(g, "thor"))
             // same as "out" (mostly)
             .e( [&](auto n, auto e) { return edgeIsOutgoing(g, n, e) && e->data == "parents"; },
@@ -221,7 +220,7 @@ TEST_CASE( "ugly::query() syntax traversal queries", "[ugly::GraphQuery]" )
 
     SECTION( ".in() can get nodes of incoming edges (1 arg)." )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             .in( [](auto e) { return e->data == "parents"; } );
 
@@ -234,7 +233,7 @@ TEST_CASE( "ugly::query() syntax traversal queries", "[ugly::GraphQuery]" )
 
     SECTION( ".out() can get nodes of outgoing edges (1 arg)." )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             .out( [](auto e) { return e->data == "parents"; } );
 
@@ -247,7 +246,7 @@ TEST_CASE( "ugly::query() syntax traversal queries", "[ugly::GraphQuery]" )
 
     SECTION( ".filter() can filter nodes (1 arg, contrived)." )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(std::vector { findNode(g, "thor"), findNode(g, "odin"), findNode(g, "odr") })
             .filter( [](auto n) { return n->data[0] != 'o'; } );
 
@@ -261,7 +260,7 @@ TEST_CASE( "ugly::query() syntax traversal queries", "[ugly::GraphQuery]" )
 
     SECTION( ".filter() can filter gremlins (2 arg, contrived)." )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(std::vector { findNode(g, "thor"), findNode(g, "odin"), findNode(g, "odr") })
             .filter( [](auto n, auto r) { return r->node()->data[0] != 'o'; } );
 
@@ -276,7 +275,7 @@ TEST_CASE( "ugly::query() syntax traversal queries", "[ugly::GraphQuery]" )
     SECTION( ".unique() ensures unique results (contrived)" )
     {
         auto thor = findNode(g, "thor");
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(std::vector { thor, thor, thor, thor, thor })
             .unique();
 
@@ -289,7 +288,7 @@ TEST_CASE( "ugly::query() syntax traversal queries", "[ugly::GraphQuery]" )
 
     SECTION( ".unique() ensures unique results (large query)" )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             .out( [](auto n, auto e) { return e->data == "parents"; } )
             .in( [](auto n, auto e) { return e->data == "parents"; } );
@@ -312,7 +311,7 @@ TEST_CASE( "ugly::query() syntax traversal queries", "[ugly::GraphQuery]" )
     SECTION( ".take() ensures limited results (contrived)" )
     {
         auto thor = findNode(g, "thor");
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(std::vector { thor, thor, thor, thor, thor })
             .take(3);
 
@@ -341,7 +340,7 @@ TEST_CASE( "ugly::query() syntax label queries", "[ugly::GraphQuery]" )
 
     SECTION( ".as() can label nodes (contrived)" )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             .as("me");
 
@@ -356,7 +355,7 @@ TEST_CASE( "ugly::query() syntax label queries", "[ugly::GraphQuery]" )
 
     SECTION( ".marge() can merge based on labels (large query)" )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             .out( [](auto n, auto e) { return e->data == "parents"; } )
             .as("parent")
@@ -374,7 +373,7 @@ TEST_CASE( "ugly::query() syntax label queries", "[ugly::GraphQuery]" )
 
     SECTION( ".except() can filter based on labels (large query)" )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             .as("me")
             .out( [](auto n, auto e) { return e->data == "parents"; } )
@@ -391,7 +390,7 @@ TEST_CASE( "ugly::query() syntax label queries", "[ugly::GraphQuery]" )
 
     SECTION( ".back() can allow backtracking (large query)" )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "fjorgynn"))
             .in( [](auto n, auto e) { return e->data == "parents"; } )
                 .as("me")
@@ -418,7 +417,7 @@ TEST_CASE( "ugly::query() sub-queries", "[ugly::GraphQuery]" )
 
     SECTION( ".optional() can replace a node with an existing subquery (contrived - empty path)" )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             .optional([](auto _) { return _.out( [](auto n, auto e) { return e->data == "creator"; } ); });
 
@@ -432,7 +431,7 @@ TEST_CASE( "ugly::query() sub-queries", "[ugly::GraphQuery]" )
 
     SECTION( ".optional() can replace a node with an existing subquery (contrived - with existing path)" )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             .optional([](auto _) { return _.out( [](auto n, auto e) { return e->data == "parents"; } ); });
 
@@ -446,7 +445,7 @@ TEST_CASE( "ugly::query() sub-queries", "[ugly::GraphQuery]" )
     SECTION( ".repeat_breadth() will repeat a subquery until a condition is met, breadth first (contrived - success)" )
     {
         std::vector<std::string> visits;
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             .repeat_breadth(
                 [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
@@ -483,7 +482,7 @@ TEST_CASE( "ugly::query() sub-queries", "[ugly::GraphQuery]" )
     SECTION( ".repeat_breadth() will repeat a subquery until a condition is met, breadth first (contrived - failure)" )
     {
         std::vector<std::string> visits;
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "frigg"))
             .repeat_breadth(
                 [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
@@ -517,7 +516,7 @@ TEST_CASE( "ugly::query() sub-queries", "[ugly::GraphQuery]" )
     SECTION( ".repeat_depth() will repeat a subquery until a condition is met, depth first (contrived - success)" )
     {
         std::vector<std::string> visits;
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             .repeat_depth(
                 [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },
@@ -554,7 +553,7 @@ TEST_CASE( "ugly::query() sub-queries", "[ugly::GraphQuery]" )
     SECTION( ".repeat_depth() will repeat a subquery until a condition is met, depth first (contrived - failure)" )
     {
         std::vector<std::string> visits;
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "frigg"))
             .repeat_depth(
                 [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },

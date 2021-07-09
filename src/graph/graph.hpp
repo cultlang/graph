@@ -21,6 +21,8 @@
 
 #include "util.hpp"
 
+#include "config/config.h"
+
 #include "storage/storage.h"
 
 #include "model/model.h"
@@ -38,8 +40,30 @@
 namespace ugly
 {
     template<typename TGraph, template <typename, typename> typename TGraphQueryLibrary = GraphQueryLibraryCore>
-    GraphQuery<TGraph, TGraphQueryLibrary> query(TGraph* g)
+    GraphQuery<TGraph, TGraphQueryLibrary> make_query(TGraph* g)
     {
         return GraphQuery<TGraph, TGraphQueryLibrary>(g);
     }
+}
+
+// New syntax
+namespace ugly
+{
+    // TODO forward this from somewhere
+    template<typename TGraphConfig>
+    class Graph
+    {
+        public:
+            struct Node {};
+            struct Edge {};
+            struct Prop {};
+            struct Label {};
+    };
+
+    // TODO forward this from somewhere
+    template<typename TGraph, typename TQueryLayers>
+    class Query
+    {
+
+    };
 }

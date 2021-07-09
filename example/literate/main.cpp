@@ -84,7 +84,7 @@ int main(int argc, char** argv)
         auto thor = ugly::findNode(g, "thor");
 
         // thor's parents and grandparents
-        auto r_thorsParentsAndGrandparents = ugly::query(&g)
+        auto r_thorsParentsAndGrandparents = ugly::make_query(&g)
             .v(thor)
             .out( [](auto n, auto e) { return e->data == "parents"; } )
             .as("parent")
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
         std::cout << fmt::format("Thor's parents and grand-parents: {0}.", r_thorsParentsAndGrandparents[0]->data) << std::endl;
 
         // thor is related to someone licked into being
-        auto r_thorsWeirdCousin = ugly::query(&g)
+        auto r_thorsWeirdCousin = ugly::make_query(&g)
             .v(ugly::findNode(g, "thor"))
             .repeat_breadth(
                 [](auto _) { return _.out( [](auto e) { return e->data == "parents"; } ); },

@@ -4,7 +4,8 @@
 
 #include <string>
 #include <iostream>
-#include <sstream> 
+#include <sstream>
+#include <exception>
 
 #include "replxx.hxx"
 #include "stdext/exception.h"

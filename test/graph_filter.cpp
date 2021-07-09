@@ -32,7 +32,7 @@ TEST_CASE( "graph filters usable in ugly::query() builders", "[ugly::filters]" )
 
     SECTION( ".in() can use filters." )
     {
-        auto q = query(&g)
+        auto q = make_query(&g)
             .v(findNode(g, "thor"))
             .in(f::byValue("parents"));
 

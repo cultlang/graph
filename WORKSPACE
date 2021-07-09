@@ -45,8 +45,8 @@ git_repository(
 git_repository(
     name = "replxx",
     remote = "https://github.com/cgrinker/replxx",
-    commit = "46dfaf9bbebe517bfd1930f2e11f4b47b1a0b7f1",
-    shallow_since = "1560556649 -0700",
+    commit = "c664b6e528e46725a00e34328320688bf512ce80",
+    shallow_since = "1625868483 -0700",
 )
 
 ########################
@@ -55,5 +55,6 @@ git_repository(
     name = "pegtl",
     remote = "https://github.com/mason-bially/PEGTL",
     commit = "7c6b89f5ee75fc7e47ff69a18851d841acd05ed6",
+    shallow_since = "1592350857 -0700",
 )
 
