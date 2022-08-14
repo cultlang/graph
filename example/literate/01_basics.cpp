@@ -69,7 +69,7 @@ int part_01_basics()
     catch (std::exception const& ex)
     {
         std::cout << "Error while loading: " << ex.what() << std::endl;
-        return 1;
+        return -1;
     }
     
     std::cout << std::format("Loaded {0} nodes and {1} edges in {2} entries.", g.nodeCount(), g.edgeCount(), entry_count) << std::endl;
@@ -124,7 +124,7 @@ int part_01_basics()
     catch (std::exception const& ex)
     {
         std::cout << "Error while loading: " << ex.what() << std::endl;
-        return 1;
+        return -1;
     }
 
     return 0;
