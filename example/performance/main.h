@@ -10,4 +10,4 @@
 
 #include "graph/graph.hpp"
 
-int part_01_basics();
+#include "stopwatch.hpp"

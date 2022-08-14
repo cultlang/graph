@@ -2,6 +2,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+COPTS = select({
+        "@bazel_tools//src/conditions:windows": ["/std:c++latest"],
+        "//conditions:default": ["-std=c++2b"],
+    })
+
 cc_library(
     name="headers",
     visibility = ["//visibility:public"],
@@ -11,14 +16,11 @@ cc_library(
     includes=[
         "src"
     ],
-    copts = select({
-        "@bazel_tools//src/conditions:windows": ["/std:c++17"],
-        "//conditions:default": ["-std=c++17"],
-    }),
     deps=[
         "@cultlang_stdext//:headers",
         "@spdlog//:headers",
-    ]
+    ],
+    copts = COPTS,
 )
 
 cc_library(
@@ -27,14 +29,13 @@ cc_library(
     srcs=glob([
         "src/**/*.c*"
     ]),
-    copts = select({
-        "@bazel_tools//src/conditions:windows": ["/std:c++17"],
-        "//conditions:default": ["-std=c++17"],
-    }),
     deps=[
         ":headers",
-        "@pegtl//:pegtl",
-    ]
+        "@cultlang_stdext//:code",
+        "@spdlog",
+        "@pegtl",
+    ],
+    copts = COPTS,
 )
 
 cc_test(
@@ -43,35 +44,41 @@ cc_test(
         "test/**/*.h*", 
         "test/**/*.cpp"
     ]),
-    copts = select({
-        "@bazel_tools//src/conditions:windows": ["/std:c++17"],
-        "//conditions:default": ["-std=c++17"],
-    }),
     deps = [
         ":ugly",
-        "@cultlang_stdext//:code",
         "@catch//:single_include",
     ],
+    copts = COPTS,
 )
 
 cc_test(
-    name = "example",
+    name = "example-literate",
     srcs = glob([
-        "example/**/*.h*", 
-        "example/**/*.cpp",
+        "example/literate/*.h*", 
+        "example/literate/*.cpp",
     ]),
     data = [
         "data/test.nt",
     ],
-    copts = select({
-        "@bazel_tools//src/conditions:windows": ["/std:c++17"],
-        "//conditions:default": ["-std=c++17"],
-    }),
     deps = [
         ":ugly",
-        "@cultlang_stdext//:code",
-        "@fmt//:fmt"
     ],
+    copts = COPTS,
+)
+
+cc_test(
+    name = "example-performance",
+    srcs = glob([
+        "example/performance/*.h*", 
+        "example/performance/*.cpp",
+    ]),
+    data = [
+        "data/test.nt",
+    ],
+    deps = [
+        ":ugly",
+    ],
+    copts = COPTS,
 )
 
 cc_binary(
@@ -80,15 +87,10 @@ cc_binary(
         "cli/**/*.h*", 
         "cli/**/*.cpp"
     ]),
-    copts = select({
-        "@bazel_tools//src/conditions:windows": ["/std:c++17"],
-        "//conditions:default": ["-std=c++17"],
-    }),
     deps = [
         ":ugly",
-        "@cultlang_stdext//:code",
-        "@fmt//:fmt",
-        "@replxx//:replxx",
-        "@pegtl//:pegtl",
+        "@replxx",
+        "@pegtl",
     ],
+    copts = COPTS,
 )

@@ -57,7 +57,7 @@ namespace ugly
             else if constexpr (std::is_invocable_v<TFuncNodes, decltype(gremlin->node()), decltype(gremlin)>)
                 filter_accepted = _func_nodes(gremlin->node(), gremlin);
             else
-                static_assert(stdext::always_false<false>, "TFuncNodes bad signature.");
+                static_assert(stdext::always_false<TGraph>, "TFuncNodes bad signature.");
 
             if (filter_accepted)
                 return gremlin;

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <stdexcept>
 #include "stdext/exception.h"
 #include "stdext/introspection.hpp"

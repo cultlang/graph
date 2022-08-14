@@ -9,8 +9,8 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "cultlang_stdext",
     remote = "https://github.com/cultlang/stdext",
-    commit = "4cc13150915535fea70e651934d0a9a76c8311a2",
-    shallow_since = "1568672074 -0700",
+    commit = "0a5aa357bc3520a4578d176f2869d956a0b91d58",
+    shallow_since = "1660444934 -0700",
 )
 
 ########################
@@ -19,7 +19,7 @@ git_repository(
     name = "catch",
     remote = "https://github.com/cgrinker/Catch2",
     commit = "5e6488fd9949cb41d717a72c8c4603b7e37d68cd",
-    shallow_since = "1560275997 -0700"
+    shallow_since = "1560275997 -0700",
 )
 
 ########################
@@ -27,17 +27,8 @@ git_repository(
 git_repository(
     name = "spdlog",
     remote = "https://github.com/cgrinker/spdlog",
-    commit = "3bf4a07dc286e10fa32d6503fded647c9ee02d26",
-    shallow_since = "1560271912 -0700"
-)
-
-########################
-# fmt
-git_repository(
-    name = "fmt",
-    remote = "https://github.com/cgrinker/fmt",
-    commit = "f16f77297e6bb4df38d4c858edb3295f55716cb4",
-    shallow_since = "1560552811 -0700"
+    commit = "d853f44b345d752538c5e3cd8c5f68e9f45e6806",
+    shallow_since = "1611099882 -0800",
 )
 
 ########################
@@ -54,7 +45,7 @@ git_repository(
 git_repository(
     name = "pegtl",
     remote = "https://github.com/mason-bially/PEGTL",
-    commit = "7c6b89f5ee75fc7e47ff69a18851d841acd05ed6",
-    shallow_since = "1592350857 -0700",
+    commit = "5eda0c4f2f0e04e781a6a17dcdededf7b35431c8",
+    shallow_since = "1660438370 -0700",
 )
 

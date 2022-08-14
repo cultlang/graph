@@ -232,7 +232,7 @@ namespace ugly
             else if constexpr (std::is_invocable_v<TFuncRepeatFilter, decltype(n), decltype(r)>)
                 return _func_repeat(n, r);
             else
-                static_assert(stdext::always_false<>, "TFuncRepeatFilter bad signature.");
+                static_assert(stdext::always_false<TGraph>, "TFuncRepeatFilter bad signature.");
         }
 
         inline bool _call_func_emit(typename TGraph::Node const* n, std::shared_ptr<typename Query::Gremlin> const& r)
@@ -242,7 +242,7 @@ namespace ugly
             else if constexpr (std::is_invocable_v<TFuncEmitFilter, decltype(n), decltype(r)>)
                 return _func_emit(n, r);
             else
-                static_assert(stdext::always_false<>, "TFuncEmitFilter bad signature.");
+                static_assert(stdext::always_false<TGraph>, "TFuncEmitFilter bad signature.");
         }
 
         inline GraphQueryPipeVertex<TGraph>* _getCurrentStateVertexPipe()
@@ -404,7 +404,7 @@ namespace ugly
             else if constexpr (std::is_invocable_v<TFuncRepeatFilter, decltype(n), decltype(r)>)
                 return _func_repeat(n, r);
             else
-                static_assert(stdext::always_false<>, "TFuncRepeatFilter bad signature.");
+                static_assert(stdext::always_false<TGraph>, "TFuncRepeatFilter bad signature.");
         }
 
         inline bool _call_func_emit(typename TGraph::Node const* n, std::shared_ptr<typename Query::Gremlin> const& r)
@@ -414,7 +414,7 @@ namespace ugly
             else if constexpr (std::is_invocable_v<TFuncEmitFilter, decltype(n), decltype(r)>)
                 return _func_emit(n, r);
             else
-                static_assert(stdext::always_false<>, "TFuncEmitFilter bad signature.");
+                static_assert(stdext::always_false<TGraph>, "TFuncEmitFilter bad signature.");
         }
 
         inline void _doPushState(std::shared_ptr<typename Query::Gremlin> const& gremlin)
